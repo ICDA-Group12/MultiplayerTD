@@ -55,12 +55,11 @@
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>Tests.TestJSpaceFX</mainClass>
+                            <mainClass>G12.pSpace.App</mainClass>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-
 </project>
