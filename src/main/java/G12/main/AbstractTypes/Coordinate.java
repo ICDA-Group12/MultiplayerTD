@@ -1,10 +1,10 @@
 package G12.main.AbstractTypes;
 
 public class Coordinate {
-    private int x;
-    private int y;
+    private double x;
+    private double y;
 
-    public Coordinate(int x, int y) {
+    public Coordinate(double x, double y) {
         this.x = x;
         this.y = y;
     }
@@ -13,17 +13,25 @@ public class Coordinate {
         return this;
     }
 
-    public int getX() {
+    public double getX() {
         return x;
     }
 
-    public int getY() {
+    public double getY() {
         return y;
     }
 
-    public void set(int x, int y) {
+    public void set(double x, double y) {
         this.x = x;
         this.y = y;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public void setY(double y) {
+        this.y= y;
     }
 
     public String toString() {
