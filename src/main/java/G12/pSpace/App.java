@@ -17,7 +17,7 @@ public class App extends Application {
     private Pane gameRoot;
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage) {
         _initIU(stage);
     }
 
