@@ -55,7 +55,7 @@
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>G12.pSpace.App</mainClass>
+                            <mainClass>G12.main.App</mainClass>
                         </configuration>
                     </execution>
                 </executions>

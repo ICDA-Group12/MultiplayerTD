@@ -1,4 +1,4 @@
-package G12.pSpace;
+package G12.main;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
