@@ -1,4 +1,4 @@
-package G12.main.entities;
+package G12.main.entities.turrets;
 
 /**
  * A basic turret.

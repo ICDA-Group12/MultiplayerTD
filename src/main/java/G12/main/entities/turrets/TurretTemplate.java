@@ -1,4 +1,4 @@
-package G12.main.entities;
+package G12.main.entities.turrets;
 
 import G12.main.AbstractTypes.Coordinate;
 
@@ -12,7 +12,7 @@ import G12.main.AbstractTypes.Coordinate;
 public abstract class TurretTemplate {
 
     // Fields
-    private final Coordinate position;
+    private Coordinate position;
     private final int _range;
     private final int _cost;
     private final int _reloadTime;
@@ -23,9 +23,4 @@ public abstract class TurretTemplate {
         this._reloadTime = reloadTime;
         this._cost = cost;
     }
-
-    public Coordinate getPosition() {
-        return position;
-    }
-
 }

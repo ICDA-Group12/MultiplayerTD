@@ -1,7 +1,6 @@
 package G12.main.AbstractTypes;
 
 public class Coordinate {
-
     private int x;
     private int y;
 
@@ -10,7 +9,7 @@ public class Coordinate {
         this.y = y;
     }
 
-    public Coordinate getCoordinate() {
+    public Coordinate get() {
         return this;
     }
 
@@ -20,6 +19,11 @@ public class Coordinate {
 
     public int getY() {
         return y;
+    }
+
+    public void set(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
 
     public String toString() {
