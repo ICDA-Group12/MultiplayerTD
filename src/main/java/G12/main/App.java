@@ -25,7 +25,6 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.getPhysicsWorld;
 
 /**
  * Shows how to use collision handlers and define hitboxes for entities.
- *
  * For collisions to work, entities must have:
  * 1. a type
  * 2. a hit box
