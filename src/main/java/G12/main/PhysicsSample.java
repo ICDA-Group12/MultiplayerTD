@@ -33,19 +33,13 @@ public class PhysicsSample extends GameApplication {
     @Override
     protected void initSettings(GameSettings settings) { }
 
+    // Resource path
     @Override
     protected void initGame() {
         FXGL.entityBuilder()
                 .type(Type.PLAYER)
                 .at(100, 100)
-                // 1. define hit boxes manually
-                .bbox(new HitBox(BoundingShape.box(40, 40)))
-                .view(new Rectangle(40, 40, Color.BLUE))
-                // 2. make it collidable
-                .collidable()
-                // Note: in case you are copy-pasting, this class is in dev.DeveloperWASDControl
-                // and enables WASD movement for testing
-                .with(new DeveloperWASDControl())
+                .view("BasicTowerSprite.png")
                 .buildAndAttach();
 
         FXGL.entityBuilder()
