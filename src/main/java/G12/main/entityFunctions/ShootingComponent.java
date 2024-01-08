@@ -21,18 +21,13 @@ public class ShootingComponent extends Component{
         NORMAL, FIRE
     }
 
-    /**
-     * Fire rate in shots per second.
-     */
-    protected double fireRate;
     protected double speed;
     protected Entity target;
     protected BulletType bulletType;
     List<Entity> bullets = new ArrayList<>();
     protected String bulletSprite;
 
-    public ShootingComponent(double fireRate, double speed, BulletType bulletType) {
-        this.fireRate = fireRate;
+    public ShootingComponent(double delay, double speed, BulletType bulletType) {
         this.speed = speed;
         this.bulletType = bulletType;
 
@@ -45,7 +40,7 @@ public class ShootingComponent extends Component{
                 break;
         }
 
-        FXGL.getGameTimer().runAtInterval(this::shoot, Duration.seconds(1));
+        FXGL.getGameTimer().runAtInterval(this::shoot, Duration.seconds(delay));
     }
 
     public void updateTarget(Entity target) {
