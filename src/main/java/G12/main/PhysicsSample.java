@@ -8,14 +8,10 @@ package G12.main;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.dsl.FXGL;
-import com.almasb.fxgl.physics.BoundingShape;
-import com.almasb.fxgl.physics.HitBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import dev.DeveloperWASDControl;
 /**
  * Shows how to use collision handlers and define hitboxes for entities.
- *
  * For collisions to work, entities must have:
  * 1. a type
  * 2. a hit box
@@ -56,9 +52,7 @@ public class PhysicsSample extends GameApplication {
     protected void initPhysics() {
         // the order of entities is determined by
         // the order of their types passed into this method
-        FXGL.onCollision(Type.PLAYER, Type.ENEMY, (player, enemy) -> {
-            System.out.println("On Collision");
-        });
+        FXGL.onCollision(Type.PLAYER, Type.ENEMY, (player, enemy) -> System.out.println("On Collision"));
 
         // the above call uses DSL
         // if you need more fine-tuned control, see below

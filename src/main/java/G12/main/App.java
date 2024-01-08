@@ -5,7 +5,6 @@
  */
 package G12.main;
 
-import G12.main.entityFunctions.RotatingComponent;
 import G12.main.entityFunctions.ShootingComponent;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
@@ -16,14 +15,9 @@ import com.almasb.fxgl.input.UserAction;
 import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.CollisionHandler;
 import com.almasb.fxgl.physics.HitBox;
-import dev.DeveloperWASDControl;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
-import org.jetbrains.annotations.Nullable;
-
-import java.lang.reflect.GenericArrayType;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import static com.almasb.fxgl.dsl.FXGLForKtKt.getPhysicsWorld;
@@ -128,9 +122,7 @@ public class App extends GameApplication {
     protected void initPhysics() {
         // the order of entities is determined by
         // the order of their types passed into this method
-        FXGL.onCollision(Type.ENEMY, Type.BULLET, (enemy, bullet) -> {
-            System.out.println("On Collision");
-        });
+        FXGL.onCollision(Type.ENEMY, Type.BULLET, (enemy, bullet) -> System.out.println("On Collision"));
 
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.ENEMY, Type.BULLET) {
             @Override
