@@ -15,12 +15,12 @@ import com.almasb.fxgl.input.UserAction;
 import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.CollisionHandler;
 import com.almasb.fxgl.physics.HitBox;
+import dev.DeveloperWASDControl;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
-import java.util.ArrayList;
 import java.util.List;
 
-import static com.almasb.fxgl.dsl.FXGLForKtKt.getPhysicsWorld;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
 
 
 /**
@@ -37,20 +37,28 @@ public class App extends GameApplication {
 
     protected boolean selected = false;
     // Create a list of turrets
-    List<Entity> turrets = new ArrayList<>();
-    List<Entity> enemies = new ArrayList<>();
 
 
     public enum Type {
-        PLAYER, ENEMY, BULLET
+        TURRET, ENEMY, BULLET
     }
 
     @Override
-    protected void initSettings(GameSettings settings) { }
+    protected void initSettings(GameSettings settings) {
+
+        settings.setWidth(1200);
+        settings.setHeight(900);
+        settings.setTitle("Tower Defense");
+
+    }
 
     // Resource path
     @Override
     protected void initGame() {
+
+
+
+
         // 1. get input service
         Input input = FXGL.getInput();
 
@@ -61,20 +69,21 @@ public class App extends GameApplication {
             protected void onActionBegin() {
 
                 if (selected) {
-                    turrets.add(FXGL.entityBuilder()
-                            .type(Type.PLAYER)
+                    FXGL.entityBuilder()
+                            .type(Type.TURRET)
                             .at(FXGL.getInput().getMouseXWorld(), FXGL.getInput().getMouseYWorld())
                             .viewWithBBox("turrets/BasicTowerSprite.png")
-                            .with(new ShootingComponent(1, 100, ShootingComponent.BulletType.NORMAL))
-                            .buildAndAttach());
+                            .with(new ShootingComponent(1, 150, ShootingComponent.BulletType.NORMAL))
+                            .buildAndAttach();
                 } else {
-                    enemies.add(FXGL.entityBuilder()
+                    FXGL.entityBuilder()
                             .type(Type.ENEMY)
                             .at(FXGL.getInput().getMouseXWorld(), FXGL.getInput().getMouseYWorld())
                             .bbox(new HitBox(BoundingShape.box(20,40)))
                             .viewWithBBox("enemies/EnemyMK1Sprite.png")
+                            .with(new DeveloperWASDControl())
                             .collidable()
-                            .buildAndAttach());
+                            .buildAndAttach();
                 }
             }
         }, MouseButton.PRIMARY);
@@ -94,6 +103,9 @@ public class App extends GameApplication {
 
     @Override
     protected void onUpdate(double tpf) {
+
+        List<Entity> turrets = getGameWorld().getEntitiesByType(Type.TURRET);
+        List<Entity> enemies = getGameWorld().getEntitiesByType(Type.ENEMY);
 
         // For each turret rotate to the nearest enemy
         for (Entity turret : turrets) {
@@ -126,7 +138,6 @@ public class App extends GameApplication {
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.ENEMY, Type.BULLET) {
             @Override
             protected void onCollisionBegin(Entity Enemy, Entity Bullet) {
-                enemies.remove(Enemy);
                 Enemy.removeFromWorld();
                 Bullet.removeFromWorld();
             }

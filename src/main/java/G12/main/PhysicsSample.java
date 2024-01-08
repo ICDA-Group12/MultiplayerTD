@@ -53,33 +53,6 @@ public class PhysicsSample extends GameApplication {
         // the order of entities is determined by
         // the order of their types passed into this method
         FXGL.onCollision(Type.PLAYER, Type.ENEMY, (player, enemy) -> System.out.println("On Collision"));
-
-        // the above call uses DSL
-        // if you need more fine-tuned control, see below
-
-//        PhysicsWorld physics = FXGL.getPhysicsWorld();
-//
-//        physics.addCollisionHandler(new CollisionHandler(Type.PLAYER, Type.ENEMY) {
-//            @Override
-//            protected void onHitBoxTrigger(Entity player, Entity enemy, HitBox playerBox, HitBox enemyBox) {
-//                System.out.println(playerBox.getName() + " X " + enemyBox.getName());
-//            }
-//
-//            @Override
-//            protected void onCollisionBegin(Entity player, Entity enemy) {
-//                System.out.println("On Collision Begin");
-//            }
-//
-//            @Override
-//            protected void onCollision(Entity player, Entity enemy) {
-//                System.out.println("On Collision");
-//            }
-//
-//            @Override
-//            protected void onCollisionEnd(Entity player, Entity enemy) {
-//                System.out.println("On Collision End");
-//            }
-//        });
     }
 
     public static void main(String[] args) {

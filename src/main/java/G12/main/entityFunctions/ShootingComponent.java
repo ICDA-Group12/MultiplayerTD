@@ -6,6 +6,7 @@ import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
 import com.almasb.fxgl.dsl.components.ProjectileComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
+import javafx.geometry.Point2D;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -56,12 +57,17 @@ public class ShootingComponent extends Component{
     }
 
     public void shoot() {
+
         if(target != null) {
+            Point2D fromTarget = entity.getCenter();
+            Point2D toTarget = target.getCenter();
+            Point2D direction = toTarget.subtract(fromTarget).normalize();
+
             bullets.add(FXGL.entityBuilder()
                     .type(App.Type.BULLET)
                     .at(entity.getPosition())
                     .viewWithBBox(bulletSprite)
-                    .with(new ProjectileComponent(target.getPosition(), speed))
+                    .with(new ProjectileComponent(direction, speed))
                     .with(new OffscreenCleanComponent())
                     .collidable()
                     .buildAndAttach());
