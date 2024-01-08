@@ -59,5 +59,4 @@ public class App extends Application {
         }
         this.button.setText("" + this.counter);
     }
-
 }
