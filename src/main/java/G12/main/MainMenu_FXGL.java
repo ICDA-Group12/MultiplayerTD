@@ -21,20 +21,27 @@ public class MainMenu_FXGL extends GameApplication {
 
     @Override
     protected void initSettings(GameSettings settings) {
-        // Configure your game settings here
+        // Configure game settings here
+        settings.setTitle("Fortify & Fight");
+        settings.setVersion("0.1");
+        settings.setWidth(800);
+        settings.setHeight(600);
     }
     @Override
     protected void initUI() {
         super.initUI();
-        try {
-            // Load the FXML file
-            Parent root = FXMLLoader.load(getClass().getResource("/MainMenu.fxml"));
+        loadScene("MainMenu.fxml");
+    }
 
-            // Add it to the FXGL game scene
+    //Method to load a scene from an FXML file.
+    private void loadScene(String fxmlFileName) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/" + fxmlFileName));
+            Parent root = fxmlLoader.load();
+            FXGL.getGameScene().clearUINodes();
             FXGL.getGameScene().addUINode(root);
-        }
-        catch (Exception e) {
-            System.out.println(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
