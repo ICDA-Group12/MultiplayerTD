@@ -6,9 +6,10 @@ import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
 import com.almasb.fxgl.dsl.components.ProjectileComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
+import com.almasb.fxgl.physics.BoundingShape;
+import com.almasb.fxgl.physics.HitBox;
 import javafx.geometry.Point2D;
 import javafx.util.Duration;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +62,7 @@ public class ShootingComponent extends Component{
             bullets.add(FXGL.entityBuilder()
                     .type(App.Type.BULLET)
                     .at(entity.getPosition())
+                    .bbox(new HitBox(BoundingShape.box(5,5)))
                     .viewWithBBox(bulletSprite)
                     .with(new ProjectileComponent(direction, speed))
                     .with(new OffscreenCleanComponent())

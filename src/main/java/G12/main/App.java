@@ -36,6 +36,9 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
 public class App extends GameApplication {
 
     protected boolean selected = false;
+    protected boolean turrettype = false;
+    protected List<Entity> enemies; // Create a list of enemies
+    protected List<Entity> turrets;
     // Create a list of turrets
 
 
@@ -62,6 +65,18 @@ public class App extends GameApplication {
         // 1. get input service
         Input input = FXGL.getInput();
 
+        input.addAction(new UserAction("Print") {
+            @Override
+            protected void onActionBegin() {
+                turrettype = !turrettype;
+                if(turrettype) {
+                    System.out.println("turrettype");
+                } else {
+                    System.out.println("!turrettype");
+                }
+            }
+        }, KeyCode.R);
+
         // 2. add key/mouse bound actions
         // when app is running press F to see output to console
         input.addAction(new UserAction("Print Line") {
@@ -69,12 +84,21 @@ public class App extends GameApplication {
             protected void onActionBegin() {
 
                 if (selected) {
-                    FXGL.entityBuilder()
-                            .type(Type.TURRET)
-                            .at(FXGL.getInput().getMouseXWorld(), FXGL.getInput().getMouseYWorld())
-                            .viewWithBBox("turrets/BasicTowerSprite.png")
-                            .with(new ShootingComponent(1, 150, ShootingComponent.BulletType.NORMAL))
-                            .buildAndAttach();
+                    if(turrettype) {
+                        FXGL.entityBuilder()
+                                .type(Type.TURRET)
+                                .at(FXGL.getInput().getMouseXWorld(), FXGL.getInput().getMouseYWorld())
+                                .viewWithBBox("turrets/BasicTowerSprite.png")
+                                .with(new ShootingComponent(0.8, 150, ShootingComponent.BulletType.NORMAL))
+                                .buildAndAttach();
+                    } else {
+                        FXGL.entityBuilder()
+                                .type(Type.TURRET)
+                                .at(FXGL.getInput().getMouseXWorld(), FXGL.getInput().getMouseYWorld())
+                                .viewWithBBox("turrets/BasicTowerUpgradeSprite.png")
+                                .with(new ShootingComponent(0.8, 150, ShootingComponent.BulletType.FIRE))
+                                .buildAndAttach();
+                    }
                 } else {
                     FXGL.entityBuilder()
                             .type(Type.ENEMY)
@@ -85,8 +109,13 @@ public class App extends GameApplication {
                             .collidable()
                             .buildAndAttach();
                 }
+
+                turrets = getGameWorld().getEntitiesByType(Type.TURRET);
+                enemies = getGameWorld().getEntitiesByType(Type.ENEMY);
             }
         }, MouseButton.PRIMARY);
+
+
 
         input.addAction(new UserAction("Type Switch") {
             @Override
@@ -104,8 +133,9 @@ public class App extends GameApplication {
     @Override
     protected void onUpdate(double tpf) {
 
-        List<Entity> turrets = getGameWorld().getEntitiesByType(Type.TURRET);
-        List<Entity> enemies = getGameWorld().getEntitiesByType(Type.ENEMY);
+        if(enemies == null || turrets == null) {
+            return;
+        }
 
         // For each turret rotate to the nearest enemy
         for (Entity turret : turrets) {
