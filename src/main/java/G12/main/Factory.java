@@ -17,7 +17,7 @@ public class Factory implements EntityFactory {
         Image view = new Image("assets/textures/turrets/TurretMK1.png");
 
         return new EntityBuilder(data)
-           .type(EntityType.TURRET)
+           .type(EntityType.TURRETMK1)
            .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
            .viewWithBBox(new ImageView(view))
            .with(new ShootingComponent(1, 200, ShootingComponent.BulletType.NORMAL))
@@ -30,7 +30,7 @@ public class Factory implements EntityFactory {
         Image view = new Image("assets/textures/turrets/TurretMK2.png");
 
         return new EntityBuilder(data)
-            .type(EntityType.TURRET)
+            .type(EntityType.TURRETMK2)
             .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
             .viewWithBBox(new ImageView(view))
             .with(new ShootingComponent(0.5, 200, ShootingComponent.BulletType.NORMAL))
