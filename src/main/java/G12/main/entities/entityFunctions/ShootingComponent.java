@@ -1,15 +1,14 @@
-package G12.main.entityFunctions;
+package G12.main.entities.entityFunctions;
 
-import G12.main.App;
+import G12.main.entities.EntityType;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
 import com.almasb.fxgl.dsl.components.ProjectileComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
-import com.almasb.fxgl.physics.BoundingShape;
-import com.almasb.fxgl.physics.HitBox;
 import javafx.geometry.Point2D;
 import javafx.util.Duration;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,10 +33,10 @@ public class ShootingComponent extends Component{
 
         switch (bulletType) {
             case NORMAL:
-                bulletSprite = "bullets/NormalBulletSprite.png";
+                bulletSprite = "bullets/BulletMK1.png";
                 break;
             case FIRE:
-                bulletSprite = "bullets/FireBulletSprite.png";
+                bulletSprite = "bullets/BulletMK2.png";
                 break;
         }
 
@@ -54,20 +53,20 @@ public class ShootingComponent extends Component{
 
     public void shoot() {
 
-        if(target != null) {
-            Point2D fromTarget = entity.getCenter();
-            Point2D toTarget = target.getCenter();
-            Point2D direction = toTarget.subtract(fromTarget).normalize();
+        if(target == null) return;
 
-            bullets.add(FXGL.entityBuilder()
-                    .type(App.Type.BULLET)
-                    .at(entity.getPosition())
-                    .bbox(new HitBox(BoundingShape.box(5,5)))
-                    .viewWithBBox(bulletSprite)
-                    .with(new ProjectileComponent(direction, speed))
-                    .with(new OffscreenCleanComponent())
-                    .collidable()
-                    .buildAndAttach());
-        }
+        Point2D fromTarget = entity.getCenter();
+        Point2D toTarget = target.getCenter();
+        Point2D direction = toTarget.subtract(fromTarget).normalize();
+
+        bullets.add(FXGL.entityBuilder()
+                .type(EntityType.BULLET)
+                .at(entity.getCenter())
+                .viewWithBBox(bulletSprite)
+                .with(new ProjectileComponent(direction, speed))
+                .with(new OffscreenCleanComponent())
+                .collidable()
+                .buildAndAttach());
+
     }
 }

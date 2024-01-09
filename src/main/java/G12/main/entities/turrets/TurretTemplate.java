@@ -15,7 +15,7 @@ public abstract class TurretTemplate {
     // Fields
     private double _x;
     private double _y;
-    private ImageView _sprite = new ImageView("file:src/main/resources/turrets/BasicTowerSprite.png");
+    private ImageView _sprite = new ImageView("file:src/main/resources/turrets/TurretMK1.png");
     private final int _range;
     private final int _cost;
     private final int _fireRate;

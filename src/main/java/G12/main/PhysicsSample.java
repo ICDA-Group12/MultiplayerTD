@@ -35,7 +35,7 @@ public class PhysicsSample extends GameApplication {
         FXGL.entityBuilder()
                 .type(Type.PLAYER)
                 .at(100, 100)
-                .view("BasicTowerSprite.png")
+                .view("TurretMK1.png")
                 .buildAndAttach();
 
         FXGL.entityBuilder()

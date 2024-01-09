@@ -11,7 +11,7 @@ import javafx.scene.image.ImageView;
 public class BasicTurret extends TurretTemplate {
 
     // Fields
-    private ImageView _sprite = new ImageView("file:src/main/resources/turrets/BasicTowerSprite.png");
+    private ImageView _sprite = new ImageView("file:src/main/resources/turrets/TurretMK1.png");
 
     public BasicTurret(double x, double y, int rotation, int range, int damage, int cost) {
         super(x, y, rotation, range, damage, cost);

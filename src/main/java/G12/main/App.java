@@ -5,46 +5,44 @@
  */
 package G12.main;
 
-import G12.main.entityFunctions.ShootingComponent;
+import G12.main.entities.EntityType;
+import G12.main.entities.entityFunctions.ShootingComponent;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
+import com.almasb.fxgl.audio.Audio;
+import com.almasb.fxgl.audio.Sound;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
+import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.input.UserAction;
-import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.CollisionHandler;
-import com.almasb.fxgl.physics.HitBox;
 import dev.DeveloperWASDControl;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Point2D;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
+
+import java.io.IOException;
 import java.util.List;
 
 import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
 
 
 /**
- * Shows how to use collision handlers and define hitboxes for entities.
- * For collisions to work, entities must have:
- * 1. a type
- * 2. a hit box
- * 3. a CollidableComponent (added by calling collidable() on entity builder)
- * 4. a collision handler
- *
- * @author Almas Baimagambetov (almaslvl@gmail.com)
+ * Main class for the game.
+ * @Author: Group 12
  */
 public class App extends GameApplication {
 
-    protected boolean selected = false;
-    protected boolean turrettype = false;
+    protected boolean turretMK1 = false;
+    protected boolean turretMK2 = false;
+    protected boolean selected = true;
     protected List<Entity> enemies; // Create a list of enemies
     protected List<Entity> turrets;
     // Create a list of turrets
-
-
-    public enum Type {
-        TURRET, ENEMY, BULLET
-    }
 
     @Override
     protected void initSettings(GameSettings settings) {
@@ -55,27 +53,32 @@ public class App extends GameApplication {
 
     }
 
+    @Override
+    protected void initUI() {
+        Button turretMK1Button = new Button("Turret MK1");
+        Button turretMK2Button = new Button("Turret MK2");
+
+        FXGL.addUINode(turretMK1Button, 100, 100);
+        FXGL.addUINode(turretMK2Button, 100, 200);
+
+        turretMK1Button.setOnAction(e -> {
+            turretMK1 = true;
+            turretMK2 = false;
+        });
+
+        turretMK2Button.setOnAction(e -> {
+            turretMK1 = false;
+            turretMK2 = true;
+        });
+    }
+
     // Resource path
     @Override
     protected void initGame() {
 
-
-
-
         // 1. get input service
         Input input = FXGL.getInput();
-
-        input.addAction(new UserAction("Print") {
-            @Override
-            protected void onActionBegin() {
-                turrettype = !turrettype;
-                if(turrettype) {
-                    System.out.println("turrettype");
-                } else {
-                    System.out.println("!turrettype");
-                }
-            }
-        }, KeyCode.R);
+        getGameWorld().addEntityFactory(new Factory());
 
         // 2. add key/mouse bound actions
         // when app is running press F to see output to console
@@ -84,38 +87,20 @@ public class App extends GameApplication {
             protected void onActionBegin() {
 
                 if (selected) {
-                    if(turrettype) {
-                        FXGL.entityBuilder()
-                                .type(Type.TURRET)
-                                .at(FXGL.getInput().getMouseXWorld(), FXGL.getInput().getMouseYWorld())
-                                .viewWithBBox("turrets/BasicTowerSprite.png")
-                                .with(new ShootingComponent(0.8, 150, ShootingComponent.BulletType.NORMAL))
-                                .buildAndAttach();
-                    } else {
-                        FXGL.entityBuilder()
-                                .type(Type.TURRET)
-                                .at(FXGL.getInput().getMouseXWorld(), FXGL.getInput().getMouseYWorld())
-                                .viewWithBBox("turrets/BasicTowerUpgradeSprite.png")
-                                .with(new ShootingComponent(0.8, 150, ShootingComponent.BulletType.FIRE))
-                                .buildAndAttach();
+                    if(turretMK1) {
+                        spawn("TurretMK1", FXGL.getInput().getMousePositionWorld());
+                    }
+                    if(turretMK2) {
+                        spawn("TurretMK2", FXGL.getInput().getMousePositionWorld());
                     }
                 } else {
-                    FXGL.entityBuilder()
-                            .type(Type.ENEMY)
-                            .at(FXGL.getInput().getMouseXWorld(), FXGL.getInput().getMouseYWorld())
-                            .bbox(new HitBox(BoundingShape.box(20,40)))
-                            .viewWithBBox("enemies/EnemyMK1Sprite.png")
-                            .with(new DeveloperWASDControl())
-                            .collidable()
-                            .buildAndAttach();
+                    spawn("EnemyMK1", FXGL.getInput().getMousePositionWorld());
                 }
 
-                turrets = getGameWorld().getEntitiesByType(Type.TURRET);
-                enemies = getGameWorld().getEntitiesByType(Type.ENEMY);
+                turrets = getGameWorld().getEntitiesByType(EntityType.TURRET);
+                enemies = getGameWorld().getEntitiesByType(EntityType.ENEMY);
             }
         }, MouseButton.PRIMARY);
-
-
 
         input.addAction(new UserAction("Type Switch") {
             @Override
@@ -163,11 +148,14 @@ public class App extends GameApplication {
     protected void initPhysics() {
         // the order of entities is determined by
         // the order of their types passed into this method
-        FXGL.onCollision(Type.ENEMY, Type.BULLET, (enemy, bullet) -> System.out.println("On Collision"));
+        FXGL.onCollision(EntityType.ENEMY, EntityType.BULLET, (enemy, bullet) -> System.out.println("On Collision"));
+        Audio hitSound = getAssetLoader().loadSound("Hit.wav").getAudio();
 
-        getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.ENEMY, Type.BULLET) {
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(EntityType.ENEMY, EntityType.BULLET) {
             @Override
             protected void onCollisionBegin(Entity Enemy, Entity Bullet) {
+                // Play sound
+                hitSound.play();
                 Enemy.removeFromWorld();
                 Bullet.removeFromWorld();
             }
