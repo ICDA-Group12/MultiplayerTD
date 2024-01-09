@@ -11,16 +11,26 @@ import G12.main.entities.entityFunctions.StoreEntityParentComponent;
 import G12.main.entities.entityFunctions.ShootingComponent;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
+import com.almasb.fxgl.app.scene.GameView;
 import com.almasb.fxgl.audio.Audio;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.input.UserAction;
 import com.almasb.fxgl.physics.CollisionHandler;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseDragEvent;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.jspace.*;
 
@@ -61,14 +71,32 @@ public class App extends GameApplication {
     @Override
     protected void initSettings(GameSettings settings) {
 
-        settings.setWidth(800);
-        settings.setHeight(600);
+        settings.setWidth(768);
+        settings.setHeight(574);
         settings.setTitle("Tower Defense");
 
     }
 
+    private void loadScene(String fxmlFileName) {
+        try {
+
+
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/" + fxmlFileName));
+            Parent root = fxmlLoader.load();
+            FXGL.getGameScene().clearUINodes();
+            //FXGL.getGameScene().addUINode(root);
+
+
+            getGameScene().addGameView(new GameView(root, -1));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     protected void initUI() {
+        //loadScene("Level1Nice.fxml");
+        loadScene("MainMenu.fxml");
 
         Button serverButton = new Button("Host Game");
         Button clientButton = new Button("Join Game");
@@ -150,7 +178,8 @@ public class App extends GameApplication {
         FXGL.image("level1.png", 800, 600);
 
         // Set the background image
-        FXGL.getGameScene().setBackgroundRepeat(FXGL.image("level1.png", 800, 600));
+        //FXGL.getGameScene().setBackgroundRepeat(FXGL.image("level1.png", 800, 600));
+        getGameScene().setUIMouseTransparent(true);
 
         // 1. get input service
         Input input = FXGL.getInput();
@@ -198,7 +227,7 @@ public class App extends GameApplication {
                     }
                 }
             }
-        }, MouseButton.PRIMARY);
+        }, MouseButton.BACK);
 
         input.addAction(new UserAction("Type Switch") {
             @Override
@@ -312,5 +341,25 @@ public class App extends GameApplication {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public void pickUpTurretMK2(MouseDragEvent mouseDragEvent) {
+        spawn("TurretMK2", mouseDragEvent.getX(), mouseDragEvent.getY());
+    }
+
+    public void pickUpPlane(MouseDragEvent mouseDragEvent) {
+    }
+
+    public void pickUpTurretMK1(MouseDragEvent mouseDragEvent) {
+        spawn("TurretMK1", mouseDragEvent.getX(), mouseDragEvent.getY());
+    }
+
+    public void joinGameButton(ActionEvent actionEvent) {
+        System.out.println("Joining game...");
+    }
+
+    public void newGameButton(ActionEvent actionEvent) {
+        System.out.println("Starting new game...");
+        loadScene("Level1Nice.fxml");
     }
 }
