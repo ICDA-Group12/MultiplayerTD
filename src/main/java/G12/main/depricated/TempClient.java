@@ -1,5 +1,6 @@
-package G12.main;
+package G12.main.depricated;
 
+import G12.main.Factory;
 import G12.main.entities.EntityType;
 import G12.main.entities.StoreEntityParentComponent;
 import G12.main.entities.entityFunctions.ShootingComponent;

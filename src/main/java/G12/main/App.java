@@ -42,8 +42,6 @@ public class App extends GameApplication {
     protected boolean turretMK1 = false;
     protected boolean turretMK2 = false;
     protected boolean selected = true;
-    protected List<Entity> enemies = new ArrayList<>(); // Create a list of enemies
-    protected List<Entity> turrets = new ArrayList<>(); // Create a list of turrets
 
     // pSpaces
     private String uri;
@@ -115,10 +113,10 @@ public class App extends GameApplication {
         input.addAction(new UserAction("Manual Spawn") {
             @Override
             protected void onActionBegin() {
+                String tier = "";
+                Entity tempTurret = null;
 
                 if (selected) {
-                    Entity tempTurret = null;
-                    String tier = "";
                     if (turretMK1) {
                         // Spawn a turret at the mouse position and add it to the list of turrets
                         tempTurret = spawn("TurretMK1", FXGL.getInput().getMousePositionWorld());
@@ -128,16 +126,20 @@ public class App extends GameApplication {
                         tempTurret = spawn("TurretMK2", FXGL.getInput().getMousePositionWorld());
                         tier = "TurretMK2";
                     }
-                    turrets.add(tempTurret);
                     try {
-                        gameSpace.put(getOppositePlayer(playerID), "newTurret", tier, tempTurret.getCenter());
+                        gameSpace.put(getOppositePlayer(playerID), "spawn", tier, tempTurret.getCenter());
                         //gameSpace.put(getOppositePlayer(playerID), "newTurret", tempTurret);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 } else {
-                    // Spawn an enemy at the mouse position and add it to the list of enemies
-                    enemies.add(spawn("EnemyMK1", FXGL.getInput().getMousePositionWorld()));
+                    tier = "EnemyMK1";
+                    tempTurret = spawn("EnemyMK1", FXGL.getInput().getMousePositionWorld());
+                    try {
+                        gameSpace.put(getOppositePlayer(playerID), "spawn", tier, tempTurret.getCenter());
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         }, MouseButton.PRIMARY);
@@ -160,28 +162,32 @@ public class App extends GameApplication {
     protected void onUpdate(double tpf) {
         Object [] response = null;
         try {
-            if(gameSpace.queryp(new ActualField(playerID), new ActualField("newTurret"), new FormalField(String.class), new FormalField(Point2D.class)) != null) {
-                response = gameSpace.get(new ActualField(playerID), new ActualField("newTurret"), new FormalField(String.class), new FormalField(Point2D.class));
+            if(gameSpace.queryp(new ActualField(playerID), new FormalField(String.class), new FormalField(String.class), new FormalField(Point2D.class)) != null) {
+                response = gameSpace.get(new ActualField(playerID), new FormalField(String.class), new FormalField(String.class), new FormalField(Point2D.class));
+                switch ((String) response[1]){
+                    case "spawn":
+                        String entityType = (String) response[2];
+                        Point2D entityPos = (Point2D) response[3];
+                        spawn(entityType, entityPos);
+                        break;
+
+                }
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-        if(response != null) {
-            String turretType = (String) response[2];
-            Point2D turretPosition = (Point2D) response[3];
-            System.out.println("Turret type: " + turretType);
-            System.out.println("Turret position: " + turretPosition);
-            Entity turret = spawn(turretType, turretPosition);
-            turrets.add(turret);//
-            System.out.println(turret.getCenter());
-        }
+        getGameWorld().getEntitiesByType(EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(this::updateSpecificTurretTarget);
 
-        if(turrets == null) return;
-
+        // if(turrets == null) return;
+        /*
         for (Entity turret : turrets) {
             updateSpecificTurretTarget(turret);
         }
+
+         */
+
+
     }
     private void sendToAllPlayer(List<Object> arguments, PlayerType currentPlayer){
 
@@ -212,7 +218,7 @@ public class App extends GameApplication {
                 // Play sound
                 hitSound.play();
                 Enemy.removeFromWorld();
-                enemies.remove(Enemy);
+                // enemies.remove(Enemy);
                 updateSpecificTurretTarget(Bullet.getComponent(StoreEntityParentComponent.class).getParentEntity());
                 Bullet.removeFromWorld();
             }
@@ -220,24 +226,25 @@ public class App extends GameApplication {
     }
 
     protected void updateSpecificTurretTarget(Entity turret) {
-        if(enemies == null) return;
 
-        double minDistance = 1000000000;
-        Entity closestEnemy = null;
-        for (Entity enemy : enemies) {
+        final double[] minDistance = {1000000000};
+        final Entity[] closestEnemy = {null};
+
+        getGameWorld().getEntitiesByType(EntityType.ENEMY).forEach(enemy -> {
             double distance = turret.distance(enemy);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestEnemy = enemy;
+            if (distance < minDistance[0]) {
+                minDistance[0] = distance;
+                closestEnemy[0] = enemy;
             }
-        }
-        if (closestEnemy != null) {
-            double angle = Math.atan2(closestEnemy.getY() - turret.getY(), closestEnemy.getX() - turret.getX());
+        });
+
+        if (closestEnemy[0] != null) {
+            double angle = Math.atan2(closestEnemy[0].getY() - turret.getY(), closestEnemy[0].getX() - turret.getX());
             // Slowly rotate to the enemy
             turret.setRotation(angle * 180 / Math.PI);
         }
 
-        turret.getComponent(ShootingComponent.class).updateTarget(closestEnemy);
+        turret.getComponent(ShootingComponent.class).updateTarget(closestEnemy[0]);
     }
 
     public static void main(String[] args) {
