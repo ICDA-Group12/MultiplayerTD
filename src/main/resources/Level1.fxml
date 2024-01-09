@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Rectangle?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: #7CFC00;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="G12.main.MoveEnemies">
+    <children>
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#93a6b7" height="49.0" layoutY="377.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="217.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#93a6b7" height="49.0" layoutX="86.0" layoutY="377.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="217.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#93a6b7" height="49.0" layoutX="176.0" layoutY="293.0" rotate="90.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="217.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#93a6b7" height="49.0" layoutX="260.0" layoutY="185.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="217.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#93a6b7" height="49.0" layoutX="344.0" layoutY="293.0" rotate="90.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="217.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#93a6b7" height="49.0" layoutX="428.0" layoutY="377.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="217.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#93a6b7" height="49.0" layoutX="583.0" layoutY="377.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="217.0" />
+    </children>
+</AnchorPane>
