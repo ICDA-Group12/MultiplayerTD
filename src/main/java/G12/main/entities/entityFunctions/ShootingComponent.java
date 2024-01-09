@@ -1,6 +1,7 @@
 package G12.main.entities.entityFunctions;
 
 import G12.main.entities.EntityType;
+import G12.main.entities.StoreEntityParentComponent;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
 import com.almasb.fxgl.dsl.components.ProjectileComponent;
@@ -14,6 +15,7 @@ import java.util.List;
 
 /**
  * Allows an entity to spawn bullets.
+ * @Author: s215521 (s215521@dtu.dk)
  */
 public class ShootingComponent extends Component{
 
@@ -65,6 +67,7 @@ public class ShootingComponent extends Component{
                 .viewWithBBox(bulletSprite)
                 .with(new ProjectileComponent(direction, speed))
                 .with(new OffscreenCleanComponent())
+                .with(new StoreEntityParentComponent(entity))
                 .collidable()
                 .buildAndAttach());
 

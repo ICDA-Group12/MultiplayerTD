@@ -6,6 +6,7 @@
 package G12.main;
 
 import G12.main.entities.EntityType;
+import G12.main.entities.StoreEntityParentComponent;
 import G12.main.entities.entityFunctions.ShootingComponent;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
@@ -19,6 +20,7 @@ import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
@@ -33,8 +35,8 @@ public class App extends GameApplication {
     protected boolean turretMK1 = false;
     protected boolean turretMK2 = false;
     protected boolean selected = true;
-    protected List<Entity> enemies; // Create a list of enemies
-    protected List<Entity> turrets;
+    protected List<Entity> enemies = new ArrayList<>(); // Create a list of enemies
+    protected List<Entity> turrets = new ArrayList<>();
     // Create a list of turrets
 
     @Override
@@ -81,17 +83,16 @@ public class App extends GameApplication {
 
                 if (selected) {
                     if(turretMK1) {
-                        spawn("TurretMK1", FXGL.getInput().getMousePositionWorld());
+                        // Spawn a turret at the mouse position and add it to the list of turrets
+                        turrets.add(spawn("TurretMK1", FXGL.getInput().getMousePositionWorld()));
                     }
                     if(turretMK2) {
-                        spawn("TurretMK2", FXGL.getInput().getMousePositionWorld());
+                        turrets.add(spawn("TurretMK2", FXGL.getInput().getMousePositionWorld()));
                     }
                 } else {
-                    spawn("EnemyMK1", FXGL.getInput().getMousePositionWorld());
+                    // Spawn an enemy at the mouse position and add it to the list of enemies
+                    enemies.add(spawn("EnemyMK1", FXGL.getInput().getMousePositionWorld()));
                 }
-
-                turrets = getGameWorld().getEntitiesByType(EntityType.TURRET);
-                enemies = getGameWorld().getEntitiesByType(EntityType.ENEMY);
             }
         }, MouseButton.PRIMARY);
 
@@ -111,30 +112,11 @@ public class App extends GameApplication {
     @Override
     protected void onUpdate(double tpf) {
 
-        if(enemies == null || turrets == null) {
-            return;
-        }
+        if(turrets == null) return;
 
-        // For each turret rotate to the nearest enemy
         for (Entity turret : turrets) {
-            double minDistance = 1000000000;
-            Entity closestEnemy = null;
-            for (Entity enemy : enemies) {
-                double distance = turret.distance(enemy);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestEnemy = enemy;
-                }
-            }
-            if (closestEnemy != null) {
-                double angle = Math.atan2(closestEnemy.getY() - turret.getY(), closestEnemy.getX() - turret.getX());
-                // Slowly rotate to the enemy
-                turret.setRotation(angle * 180 / Math.PI);
-            }
-
-            turret.getComponent(ShootingComponent.class).updateTarget(closestEnemy);
+            updateSpecificTurretTarget(turret);
         }
-
     }
 
     @Override
@@ -150,9 +132,32 @@ public class App extends GameApplication {
                 // Play sound
                 hitSound.play();
                 Enemy.removeFromWorld();
+                enemies.remove(Enemy);
+                updateSpecificTurretTarget(Bullet.getComponent(StoreEntityParentComponent.class).getParentEntity());
                 Bullet.removeFromWorld();
             }
         });
+    }
+
+    protected void updateSpecificTurretTarget(Entity turret) {
+        if(enemies == null) return;
+
+        double minDistance = 1000000000;
+        Entity closestEnemy = null;
+        for (Entity enemy : enemies) {
+            double distance = turret.distance(enemy);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestEnemy = enemy;
+            }
+        }
+        if (closestEnemy != null) {
+            double angle = Math.atan2(closestEnemy.getY() - turret.getY(), closestEnemy.getX() - turret.getX());
+            // Slowly rotate to the enemy
+            turret.setRotation(angle * 180 / Math.PI);
+        }
+
+        turret.getComponent(ShootingComponent.class).updateTarget(closestEnemy);
     }
 
     public static void main(String[] args) {
