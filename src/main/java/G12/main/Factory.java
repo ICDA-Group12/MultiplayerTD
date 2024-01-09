@@ -7,7 +7,6 @@ import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.Spawns;
-import dev.DeveloperWASDControl;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 

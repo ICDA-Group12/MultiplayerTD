@@ -10,22 +10,15 @@ import G12.main.entities.entityFunctions.ShootingComponent;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.audio.Audio;
-import com.almasb.fxgl.audio.Sound;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
-import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.input.UserAction;
 import com.almasb.fxgl.physics.CollisionHandler;
-import dev.DeveloperWASDControl;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.Point2D;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 
-import java.io.IOException;
 import java.util.List;
 
 import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
