@@ -10,6 +10,8 @@ import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.Spawns;
+import com.almasb.fxgl.physics.PhysicsComponent;
+import com.almasb.fxgl.physics.box2d.dynamics.BodyType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -43,13 +45,18 @@ public class Factory implements EntityFactory {
 
     @Spawns("EnemyMK1")
     public Entity EnemyMK1(SpawnData data) {
+        PhysicsComponent physics = new PhysicsComponent();
+        physics.setBodyType(BodyType.KINEMATIC);
+        physics.setOnPhysicsInitialized(() -> physics.setLinearVelocity(100, 0));
         Image view = new Image("assets/textures/enemies/EnemyMK1.png");
-
         return new EntityBuilder(data)
-            .type(EntityType.ENEMY)
-            .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
-            .viewWithBBox(new ImageView(view))
-            .collidable()
-            .build();
+                .type(EntityType.ENEMY)
+                .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
+                .viewWithBBox(new ImageView(view))
+                .with(new OffscreenCleanComponent())
+                .with(physics)
+                .with(new MoveEnemyComponent())
+                .collidable()
+                .build();
     }
 }

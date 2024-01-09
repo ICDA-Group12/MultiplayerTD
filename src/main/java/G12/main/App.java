@@ -22,6 +22,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
+import javafx.util.Duration;
 import org.jspace.*;
 
 import java.io.BufferedReader;
@@ -30,6 +31,9 @@ import java.io.InputStreamReader;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import static com.almasb.fxgl.dsl.FXGL.getPhysicsWorld;
+import static com.almasb.fxgl.dsl.FXGL.run;
+import static com.almasb.fxgl.dsl.FXGL.spawn;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
 
 
@@ -38,6 +42,14 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
  * @Author: Group 12
  */
 public class App extends GameApplication {
+    public static final Point2D[] pathCoordinates= {
+            new Point2D(300, 390),
+            new Point2D(277, 380),
+            new Point2D(277, 200),
+            new Point2D(450, 200),
+            new Point2D(450, 390),
+            new Point2D(800, 390)
+    };
 
     protected boolean turretMK1 = false;
     protected boolean turretMK2 = false;
@@ -92,14 +104,12 @@ public class App extends GameApplication {
     // Resource path
     @Override
     protected void initGame() {
-
-        BufferedReader terminalInput = new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("Enter your role: ");
-        String role;
+        System.out.println("Server or client?");
         try {
-            role = terminalInput.readLine();
+            BufferedReader teminalInput = new BufferedReader(new InputStreamReader(System.in));
+            String role = teminalInput.readLine();
 
-            if (role.equals("server")) {
+            if(role.equals("server")){
                 uri = "tcp://localhost:31415/?keep";
                 playerID = PlayerType.PLAYER1;
                 gameSpace = new SequentialSpace();
@@ -108,20 +118,32 @@ public class App extends GameApplication {
                 repository.addGate(uri);
                 System.out.println("Connected to game space");
                 gameSpace.put("gold", 1000);
-            } else {
+
+            } else if (role.equals("client")){
                 playerID = PlayerType.PLAYER2;
                 uri = "tcp://localhost:31415/game?keep";
                 gameSpace = new RemoteSpace(uri);
                 System.out.println("Connected to game space");
             }
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+
+        } catch (InterruptedException | IOException ex) {
+            throw new RuntimeException(ex);
         }
 
+        FXGL.image("level1.png", 800, 600);
+
+        // Set the background image
+        FXGL.getGameScene().setBackgroundRepeat(FXGL.image("level1.png", 800, 600));
 
         // 1. get input service
         Input input = FXGL.getInput();
         getGameWorld().addEntityFactory(new Factory());
+
+
+        run(()-> {
+            spawn("EnemyMK1", 0,390);
+
+        }, Duration.seconds(0.5));
 
         input.addAction(new UserAction("Manual Spawn") {
             @Override
@@ -222,6 +244,7 @@ public class App extends GameApplication {
     protected void initPhysics() {
         // the order of entities is determined by
         // the order of their types passed into this method
+        getPhysicsWorld().setGravity(0,0);
         FXGL.onCollision(EntityType.ENEMY, EntityType.BULLET, (enemy, bullet) -> System.out.println("On Collision"));
         Audio hitSound = getAssetLoader().loadSound("Hit.wav").getAudio();
 
