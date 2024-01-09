@@ -7,7 +7,8 @@ package G12.main;
 
 import G12.main.entities.EntityType;
 import G12.main.entities.PlayerType;
-import G12.main.entities.StoreEntityParentComponent;
+import G12.main.entities.entityFunctions.MoveEnemyComponent;
+import G12.main.entities.entityFunctions.StoreEntityParentComponent;
 import G12.main.entities.entityFunctions.ShootingComponent;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
@@ -26,8 +27,7 @@ import org.jspace.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
@@ -61,11 +61,24 @@ public class App extends GameApplication {
 
     @Override
     protected void initUI() {
+
+        Button serverButton = new Button("Host Game");
+        Button clientButton = new Button("Join Game");
+
         Button turretMK1Button = new Button("Turret MK1");
         Button turretMK2Button = new Button("Turret MK2");
 
         FXGL.addUINode(turretMK1Button, 100, 100);
         FXGL.addUINode(turretMK2Button, 100, 200);
+
+        serverButton.setOnAction(e -> {
+        });
+
+
+
+
+        clientButton.setOnAction(e -> {
+        });
 
         turretMK1Button.setOnAction(e -> {
             turretMK1 = true;

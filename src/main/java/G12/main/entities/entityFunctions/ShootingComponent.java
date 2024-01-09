@@ -1,7 +1,6 @@
 package G12.main.entities.entityFunctions;
 
 import G12.main.entities.EntityType;
-import G12.main.entities.StoreEntityParentComponent;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
 import com.almasb.fxgl.dsl.components.ProjectileComponent;
