@@ -7,7 +7,6 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="G12.main.MainMenu_FXGL">
    <children>
       <ImageView fitHeight="600.0" fitWidth="800.0">
@@ -20,12 +19,12 @@
             <Font size="72.0" />
          </font>
       </Text>
-      <Button fx:id="multiplayer_btn" layoutX="288.0" layoutY="356.0" mnemonicParsing="false" prefHeight="77.0" prefWidth="223.0" text="Multiplayer">
+      <Button fx:id="multiplayer_btn" layoutX="288.0" layoutY="356.0" mnemonicParsing="false" onAction="#joinGameButton" prefHeight="77.0" prefWidth="223.0" text="Multiplayer">
          <font>
             <Font size="24.0" />
          </font>
       </Button>
-      <Button fx:id="new_game_btn" layoutX="288.0" layoutY="261.0" mnemonicParsing="false" prefHeight="77.0" prefWidth="223.0" text="New Game">
+      <Button fx:id="new_game_btn" layoutX="288.0" layoutY="261.0" mnemonicParsing="false" onAction="#newGameButton" prefHeight="77.0" prefWidth="223.0" text="New Game">
          <font>
             <Font size="24.0" />
          </font>

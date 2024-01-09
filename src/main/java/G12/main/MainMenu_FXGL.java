@@ -49,4 +49,13 @@ public class MainMenu_FXGL extends GameApplication {
         launch(args);
     }
 
+    public void newGameButton(ActionEvent actionEvent) {
+        loadScene("Level1.fxml");
+        System.out.println("Starting New Game...");
+    }
+
+    public void joinGameButton(ActionEvent actionEvent) {
+        loadScene("Level1.fxml");
+        System.out.println("Joining Game...");
+    }
 }
