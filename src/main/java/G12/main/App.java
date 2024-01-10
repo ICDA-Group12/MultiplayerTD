@@ -211,7 +211,7 @@ public class App extends GameApplication {
                         // Pause all components draggedEntity.getComponents() except for the DraggableComponent;
                         List<Component> components = draggedEntity.getComponents();
                         for (Component component : components) {
-                            if (component.getClass() == SpawnDraggableComponent.class){
+                            if (component.getClass() != SpawnDraggableComponent.class){
                                 component.pause();
                             }
                         }
