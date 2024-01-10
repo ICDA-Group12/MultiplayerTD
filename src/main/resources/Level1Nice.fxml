@@ -36,36 +36,557 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
+            <ImageView fitWidth="64.0" layoutX="10.0" layoutY="10.0" GridPane.rowIndex="7">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile001.png" />
+               </image>
+            </ImageView>
             <ImageView fitWidth="64.0" layoutX="10.0" layoutY="10.0" GridPane.rowIndex="6">
                <image>
-                  <Image url="@Default%20size/towerDefense_tile001.png" />
+                  <Image url="@Default%20size/towerDefense_tile047.png" />
                </image>
             </ImageView>
-            <ImageView fitWidth="64.0" layoutX="10.0" layoutY="10.0" GridPane.rowIndex="5">
+            <ImageView fitWidth="64.0" layoutX="10.0" layoutY="266.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                <image>
                   <Image url="@Default%20size/towerDefense_tile047.png" />
                </image>
             </ImageView>
-            <ImageView fitWidth="64.0" layoutX="10.0" layoutY="266.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
-               <image>
-                  <Image url="@Default%20size/towerDefense_tile047.png" />
-               </image>
-            </ImageView>
-            <ImageView fitWidth="64.0" layoutX="10.0" layoutY="330.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+            <ImageView fitWidth="64.0" layoutX="10.0" layoutY="330.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
                <image>
                   <Image url="@Default%20size/towerDefense_tile001.png" />
                </image>
             </ImageView>
-            <ImageView fitWidth="64.0" layoutX="74.0" layoutY="266.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
+            <ImageView fitWidth="64.0" layoutX="74.0" layoutY="266.0" GridPane.columnIndex="2" GridPane.rowIndex="6">
                <image>
                   <Image url="@Default%20size/towerDefense_tile047.png" />
                </image>
             </ImageView>
-            <ImageView fx:id="sssd" fitWidth="64.0" layoutX="138.0" layoutY="266.0" GridPane.columnIndex="3" GridPane.rowIndex="5">
+            <ImageView fitWidth="64.0" GridPane.columnIndex="4" GridPane.rowIndex="7">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile027.png" />
+               </image>
+            </ImageView>
+            <ImageView fitWidth="64.0" GridPane.columnIndex="2" GridPane.rowIndex="7">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile001.png" />
+               </image>
+            </ImageView>
+            <ImageView fitWidth="64.0" GridPane.columnIndex="3" GridPane.rowIndex="7">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile001.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="3" GridPane.rowIndex="6">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile048.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="4" GridPane.rowIndex="6">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile023.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="4" GridPane.rowIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile023.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="3" GridPane.rowIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile025.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="3" GridPane.rowIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile025.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="3" GridPane.rowIndex="3">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile003.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="5" GridPane.rowIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile001.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="4" GridPane.rowIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile299.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="6" GridPane.rowIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile002.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="6" GridPane.rowIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile025.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="7" GridPane.rowIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile023.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="7" GridPane.rowIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile023.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="7" GridPane.rowIndex="6">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile046.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="6" GridPane.rowIndex="6">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile025.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="6" GridPane.rowIndex="7">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile026.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="7" GridPane.rowIndex="7">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile001.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="8" GridPane.rowIndex="7">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile001.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="9" GridPane.rowIndex="7">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile001.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="10" GridPane.rowIndex="7">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile001.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="4" GridPane.rowIndex="3">
                <image>
                   <Image url="@Default%20size/towerDefense_tile047.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="5" GridPane.rowIndex="3">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile047.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="6" GridPane.rowIndex="3">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile047.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="7" GridPane.rowIndex="3">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile004.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="8" GridPane.rowIndex="6">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile047.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="9" GridPane.rowIndex="6">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile047.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="10" GridPane.rowIndex="6">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile047.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="5" GridPane.rowIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="5" GridPane.rowIndex="6">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="5" GridPane.rowIndex="7">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="5" GridPane.rowIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="3" GridPane.rowIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="4" GridPane.rowIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="2" GridPane.rowIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="1" GridPane.rowIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.rowIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.rowIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="1" GridPane.rowIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="2" GridPane.rowIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="3" GridPane.rowIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="4" GridPane.rowIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="5" GridPane.rowIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="6" GridPane.rowIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="7" GridPane.rowIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="7" GridPane.rowIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="8" GridPane.rowIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="9" GridPane.rowIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="10" GridPane.rowIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="8" GridPane.rowIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="9" GridPane.rowIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="10" GridPane.rowIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="6" GridPane.rowIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.rowIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="1" GridPane.rowIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="2" GridPane.rowIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.rowIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="1" GridPane.rowIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="2" GridPane.rowIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.rowIndex="3">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="1" GridPane.rowIndex="3">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="2" GridPane.rowIndex="3">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.rowIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.rowIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="9" GridPane.rowIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="1" GridPane.rowIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="2" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="2" GridPane.rowIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="3">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="3" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="3" GridPane.rowIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="4" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="4" GridPane.rowIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="5" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="5" GridPane.rowIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="6">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="6" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="6" GridPane.rowIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="7">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="7" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="7" GridPane.rowIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="8" GridPane.rowIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="9" GridPane.rowIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="10" GridPane.rowIndex="5">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="9" GridPane.rowIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="9" GridPane.rowIndex="3">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="8" GridPane.rowIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="8" GridPane.rowIndex="3">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="8" GridPane.rowIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="8" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="8">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="9" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="9">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="10" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="10">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="10" GridPane.rowIndex="2">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="10" GridPane.rowIndex="3">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView GridPane.columnIndex="10" GridPane.rowIndex="4">
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
+               </image>
+            </ImageView>
+            <ImageView>
+               <image>
+                  <Image url="@Default%20size/towerDefense_tile024.png" />
                </image>
             </ImageView>
          </children>
