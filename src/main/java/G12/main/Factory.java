@@ -3,9 +3,8 @@ package G12.main;
 import G12.main.entities.EntityType;
 import G12.main.entities.entityFunctions.MoveEnemyComponent;
 import G12.main.entities.entityFunctions.ShootingComponent;
+import G12.main.entities.entityFunctions.SpawnDraggableComponent;
 import com.almasb.fxgl.dsl.EntityBuilder;
-import com.almasb.fxgl.dsl.components.DraggableComponent;
-import com.almasb.fxgl.dsl.components.KeepOnScreenComponent;
 import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
@@ -31,6 +30,18 @@ public class Factory implements EntityFactory {
            .collidable()
            .build();
     }
+    @Spawns("TurretMK1static")
+    public Entity TurretMK1static(SpawnData data) {
+        Image view = new Image("assets/textures/turrets/TurretMK1.png");
+
+        return new EntityBuilder(data)
+                .type(EntityType.TURRETMK1)
+                .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
+                .viewWithBBox(new ImageView(view))
+                .with(new ShootingComponent(1, 200, ShootingComponent.BulletType.NORMAL))
+                .collidable()
+                .build();
+    }
 
     @Spawns("TurretMK2")
     public Entity TurretMK2(SpawnData data) {
@@ -44,6 +55,18 @@ public class Factory implements EntityFactory {
                 .with(new SpawnDraggableComponent())
             .collidable()
             .build();
+    }
+    @Spawns("TurretMK2static")
+    public Entity TurretMK2static(SpawnData data) {
+        Image view = new Image("assets/textures/turrets/TurretMK2.png");
+
+        return new EntityBuilder(data)
+                .type(EntityType.TURRETMK2)
+                .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
+                .viewWithBBox(new ImageView(view))
+                .with(new ShootingComponent(0.5, 200, ShootingComponent.BulletType.NORMAL))
+                .collidable()
+                .build();
     }
 
     @Spawns("EnemyMK1")

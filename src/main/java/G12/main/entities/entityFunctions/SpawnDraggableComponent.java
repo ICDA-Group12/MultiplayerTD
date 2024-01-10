@@ -1,9 +1,11 @@
-package G12.main;
+package G12.main.entities.entityFunctions;
 
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.input.Input;
+import com.almasb.fxgl.input.TriggerListener;
 import javafx.event.EventHandler;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 
@@ -18,6 +20,9 @@ public class SpawnDraggableComponent extends Component {
         Input input = FXGL.getInput();
         input.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
             if (e.getButton() == MouseButton.PRIMARY && isDragging) {
+                System.out.println(input.getMousePositionWorld());
+
+                //System.out.println(e.getTarget());
                 System.out.println("Released");
                 setDragging(false);
             }

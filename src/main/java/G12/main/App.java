@@ -7,15 +7,14 @@ package G12.main;
 
 import G12.main.entities.EntityType;
 import G12.main.entities.PlayerType;
+import G12.main.entities.entityFunctions.SpawnDraggableComponent;
 import G12.main.entities.entityFunctions.StoreEntityParentComponent;
 import G12.main.entities.entityFunctions.ShootingComponent;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.app.scene.GameView;
 import com.almasb.fxgl.audio.Audio;
-import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.dsl.FXGL;
-import com.almasb.fxgl.dsl.components.DraggableComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.input.Input;
@@ -25,14 +24,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.jspace.*;
 
@@ -70,6 +63,9 @@ public class App extends GameApplication {
     protected boolean selected = true;
     private boolean isDragging = false;
     private Entity draggedEntity = null;
+
+    private String tier = "";
+    private Entity tempTurret = null;
 
 
     // pSpaces
@@ -149,18 +145,16 @@ public class App extends GameApplication {
         input.addAction(new UserAction("Manual Spawn") {
             @Override
             protected void onActionBegin() {
-                String tier = "";
-                Entity tempTurret = null;
 
                 if (selected) {
                     if (turretMK1) {
                         // Spawn a turret at the mouse position and add it to the list of turrets
                         tempTurret = spawn("TurretMK1", FXGL.getInput().getMousePositionWorld());
-                        tier = "TurretMK1";
+                        tier = "TurretMK1static";
                     } else {
                         // Spawn a turret at the mouse position and add it to the list of turrets
                         tempTurret = spawn("TurretMK2", FXGL.getInput().getMousePositionWorld());
-                        tier = "TurretMK2";
+                        tier = "TurretMK2static";
                     }
                     try {
                         //gameSpace.put(getOppositePlayer(playerID), "spawn", tier, tempTurret.getCenter());
@@ -182,7 +176,7 @@ public class App extends GameApplication {
                     }
                 }
             }
-        }, MouseButton.BACK);
+        }, KeyCode.P);
 
 
 
@@ -229,9 +223,11 @@ public class App extends GameApplication {
                 }
             }
         });
+
         input.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
             if (e.getButton() == MouseButton.PRIMARY) {
                 if (draggedEntity != null) {
+
                     // Spawn the entity at the mouse position and add it to the list of turrets
                     List<Component> components = draggedEntity.getComponents();
                     for (Component component : components) {
@@ -250,8 +246,8 @@ public class App extends GameApplication {
         System.out.println("Server or client?");
         try {
             BufferedReader teminalInput = new BufferedReader(new InputStreamReader(System.in));
-            //String role = teminalInput.readLine();
-            String role = "server";
+            String role = teminalInput.readLine();
+            //String role = "server";
             if(role.equalsIgnoreCase("server")){
                 uri = "tcp://localhost:31415/?keep";
                 gameSpace = new SequentialSpace();
@@ -273,6 +269,7 @@ public class App extends GameApplication {
                 Object [] getPlayers = gameSpace.get(new ActualField("players"),new FormalField(Integer.class));
                 int playerCounter = (int) getPlayers[1];
                 if (playerCounter == 4){
+                    gameSpace.put("players", playerCounter);
                     System.out.println("Game is full");
                     System.exit(0);
                 }
@@ -340,6 +337,8 @@ public class App extends GameApplication {
 
 
     }
+
+
     private void sendToAllPlayers(Tuple fields, PlayerType currentPlayer) throws InterruptedException {
 
         System.out.println("Sending to all other players...");
