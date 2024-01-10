@@ -13,8 +13,11 @@ import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.app.scene.GameView;
 import com.almasb.fxgl.audio.Audio;
+import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.dsl.FXGL;
+import com.almasb.fxgl.dsl.components.DraggableComponent;
 import com.almasb.fxgl.entity.Entity;
+import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.input.UserAction;
 import com.almasb.fxgl.physics.CollisionHandler;
@@ -24,9 +27,8 @@ import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseDragEvent;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -37,6 +39,8 @@ import org.jspace.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
+import java.util.Objects;
 
 import static com.almasb.fxgl.dsl.FXGL.getPhysicsWorld;
 import static com.almasb.fxgl.dsl.FXGL.run;
@@ -57,16 +61,23 @@ public class App extends GameApplication {
             new Point2D(450, 390),
             new Point2D(800, 390)
     };
+    public Button mk2_btn;
+    public Button mk1_btn;
+    public Button plane1_btn;
 
     protected boolean turretMK1 = false;
     protected boolean turretMK2 = false;
     protected boolean selected = true;
+    private boolean isDragging = false;
+    private Entity draggedEntity = null;
+
 
     // pSpaces
     private String uri;
     private SpaceRepository repository;
     private Space gameSpace;
     private PlayerType playerID;
+    private Parent root;
 
     @Override
     protected void initSettings(GameSettings settings) {
@@ -82,7 +93,7 @@ public class App extends GameApplication {
 
 
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/" + fxmlFileName));
-            Parent root = fxmlLoader.load();
+            root = fxmlLoader.load();
             FXGL.getGameScene().clearUINodes();
             //FXGL.getGameScene().addUINode(root);
 
@@ -95,8 +106,8 @@ public class App extends GameApplication {
 
     @Override
     protected void initUI() {
-        //loadScene("Level1Nice.fxml");
-        loadScene("MainMenu.fxml");
+        loadScene("Level1Nice.fxml");
+        //loadScene("MainMenu.fxml");
 
         Button serverButton = new Button("Host Game");
         Button clientButton = new Button("Join Game");
@@ -123,73 +134,17 @@ public class App extends GameApplication {
         turretMK2Button.setOnAction(e -> {
             turretMK1 = false;
         });
+
+
     }
 
-    // Resource path
     @Override
-    protected void initGame() {
-        System.out.println("Server or client?");
-        try {
-            BufferedReader teminalInput = new BufferedReader(new InputStreamReader(System.in));
-            String role = teminalInput.readLine();
-
-            if(role.equals("server")){
-                uri = "tcp://localhost:31415/?keep";
-                gameSpace = new SequentialSpace();
-                repository = new SpaceRepository();
-                repository.add("game", gameSpace);
-                repository.addGate(uri);
-                System.out.println("Connected to game space");
-                gameSpace.put("gold", 1000);
-                gameSpace.put("lives", 10);
-                gameSpace.put("players", 1);
-                playerID = PlayerType.PLAYER1;
-
-
-            } else if (role.equals("client")){
-                uri = "tcp://localhost:31415/game?keep";
-                gameSpace = new RemoteSpace(uri);
-                System.out.println("Connected to game space");
-
-                Object [] getPlayers = gameSpace.get(new ActualField("players"),new FormalField(Integer.class));
-                int playerCounter = (int) getPlayers[1];
-                if (playerCounter == 4){
-                    System.out.println("Game is full");
-                    System.exit(0);
-                }
-                switch (playerCounter){
-                    case 1:
-                        playerID = PlayerType.PLAYER2;
-                        break;
-                    case 2:
-                        playerID = PlayerType.PLAYER3;
-                        break;
-                    case 3:
-                        playerID = PlayerType.PLAYER4;
-                        break;
-                }
-                gameSpace.put("players", playerCounter+1);
-            }
-
-        } catch (InterruptedException | IOException ex) {
-            throw new RuntimeException(ex);
-        }
-
-        FXGL.image("level1.png", 800, 600);
-
-        // Set the background image
-        //FXGL.getGameScene().setBackgroundRepeat(FXGL.image("level1.png", 800, 600));
-        getGameScene().setUIMouseTransparent(true);
+    protected void initInput() {
+        super.initInput();
 
         // 1. get input service
         Input input = FXGL.getInput();
-        getGameWorld().addEntityFactory(new Factory());
 
-        
-        run(()-> {
-            spawn("EnemyMK1", 0,390);
-
-        }, Duration.seconds(0.5));
 
         input.addAction(new UserAction("Manual Spawn") {
             @Override
@@ -229,6 +184,8 @@ public class App extends GameApplication {
             }
         }, MouseButton.BACK);
 
+
+
         input.addAction(new UserAction("Type Switch") {
             @Override
             protected void onActionBegin() {
@@ -241,6 +198,114 @@ public class App extends GameApplication {
             }
 
         }, KeyCode.T);
+
+
+        input.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (e.getButton() == MouseButton.PRIMARY) {
+                System.out.println(e.getTarget());
+                if (e.getTarget().getClass() == Button.class) {
+                    Button btn = (Button) e.getTarget();
+                    if (Objects.equals(btn.getId(), "mk1_btn")) {
+                        draggedEntity = spawn("TurretMK1", FXGL.getInput().getMousePositionWorld());
+
+                        // Pause all components draggedEntity.getComponents() except for the DraggableComponent;
+                        List<Component> components = draggedEntity.getComponents();
+                        for (Component component : components) {
+                            if (component.getClass() == SpawnDraggableComponent.class){
+                                component.pause();
+                            }
+                        }
+
+
+                        System.out.println("mk1_btn clicked");
+//                    turretMK1 = true;
+                        //spawn("TurretMK1", FXGL.getInput().getMousePositionWorld());
+                    } else if (Objects.equals(btn.getId(), "mk2_btn")) {
+                        System.out.println("mk2_btn clicked");
+                        draggedEntity = spawn("TurretMK2", FXGL.getInput().getMousePositionWorld());
+//                    turretMK1 = false;
+                        //spawn("TurretMK2", FXGL.getInput().getMousePositionWorld());
+                    }
+                }
+            }
+        });
+        input.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+            if (e.getButton() == MouseButton.PRIMARY) {
+                if (draggedEntity != null) {
+                    // Spawn the entity at the mouse position and add it to the list of turrets
+                    List<Component> components = draggedEntity.getComponents();
+                    for (Component component : components) {
+                        component.resume();
+                    }
+                    draggedEntity = null;
+                }
+            }
+        });
+
+    }
+
+    // Resource path
+    @Override
+    protected void initGame() {
+        System.out.println("Server or client?");
+        try {
+            BufferedReader teminalInput = new BufferedReader(new InputStreamReader(System.in));
+            //String role = teminalInput.readLine();
+            String role = "server";
+            if(role.equalsIgnoreCase("server")){
+                uri = "tcp://localhost:31415/?keep";
+                gameSpace = new SequentialSpace();
+                repository = new SpaceRepository();
+                repository.add("game", gameSpace);
+                repository.addGate(uri);
+                System.out.println("Connected to game space");
+                gameSpace.put("gold", 1000);
+                gameSpace.put("lives", 10);
+                gameSpace.put("players", 1);
+                playerID = PlayerType.PLAYER1;
+
+
+            } else if (role.equalsIgnoreCase("client")){
+                uri = "tcp://localhost:31415/game?keep";
+                gameSpace = new RemoteSpace(uri);
+                System.out.println("Connected to game space");
+
+                Object [] getPlayers = gameSpace.get(new ActualField("players"),new FormalField(Integer.class));
+                int playerCounter = (int) getPlayers[1];
+                if (playerCounter == 4){
+                    System.out.println("Game is full");
+                    System.exit(0);
+                }
+                switch (playerCounter){
+                    case 1:
+                        playerID = PlayerType.PLAYER2;
+                        break;
+                    case 2:
+                        playerID = PlayerType.PLAYER3;
+                        break;
+                    case 3:
+                        playerID = PlayerType.PLAYER4;
+                        break;
+                }
+                gameSpace.put("players", playerCounter+1);
+            }else {
+                System.out.println("Invalid input");
+                System.exit(0);
+            }
+
+        } catch (InterruptedException | IOException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        getGameWorld().addEntityFactory(new Factory());
+
+        
+        run(()-> {
+            spawn("EnemyMK1", 0,390);
+
+        }, Duration.seconds(0.5));
+
+
     }
 
     @Override
@@ -330,6 +395,7 @@ public class App extends GameApplication {
             }
         });
 
+
         if (closestEnemy[0] != null) {
             double angle = Math.atan2(closestEnemy[0].getY() - turret.getY(), closestEnemy[0].getX() - turret.getX());
             // Slowly rotate to the enemy
@@ -343,17 +409,6 @@ public class App extends GameApplication {
         launch(args);
     }
 
-    public void pickUpTurretMK2(MouseDragEvent mouseDragEvent) {
-        spawn("TurretMK2", mouseDragEvent.getX(), mouseDragEvent.getY());
-    }
-
-    public void pickUpPlane(MouseDragEvent mouseDragEvent) {
-    }
-
-    public void pickUpTurretMK1(MouseDragEvent mouseDragEvent) {
-        spawn("TurretMK1", mouseDragEvent.getX(), mouseDragEvent.getY());
-    }
-
     public void joinGameButton(ActionEvent actionEvent) {
         System.out.println("Joining game...");
     }
@@ -361,5 +416,14 @@ public class App extends GameApplication {
     public void newGameButton(ActionEvent actionEvent) {
         System.out.println("Starting new game...");
         loadScene("Level1Nice.fxml");
+    }
+
+    public void pickUpTurretMK2(MouseDragEvent mouseDragEvent) {
+    }
+
+    public void image_clicked(MouseEvent mouseEvent) {
+    }
+
+    public void pickUpPlane(MouseDragEvent mouseDragEvent) {
     }
 }
