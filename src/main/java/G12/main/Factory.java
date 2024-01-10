@@ -3,7 +3,6 @@ package G12.main;
 import G12.main.entities.EntityType;
 import G12.main.entities.entityFunctions.MoveEnemyComponent;
 import G12.main.entities.entityFunctions.ShootingComponent;
-import G12.main.entities.entityFunctions.SpawnDraggableComponent;
 import com.almasb.fxgl.dsl.EntityBuilder;
 import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
 import com.almasb.fxgl.entity.Entity;
@@ -25,7 +24,7 @@ public class Factory implements EntityFactory {
            .type(EntityType.SPRITE)
            .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
            .viewWithBBox(new ImageView(view))
-                .with(new SpawnDraggableComponent())
+//                .with(new SpawnDraggableComponent())
            .collidable()
            .build();
     }
@@ -50,8 +49,9 @@ public class Factory implements EntityFactory {
             .type(EntityType.SPRITE)
             .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
             .viewWithBBox(new ImageView(view))
+//                .with(new PosistionComponent())
             .with(new ShootingComponent(0.5, 200, ShootingComponent.BulletType.NORMAL))
-                .with(new SpawnDraggableComponent())
+//                .with(new SpawnDraggableComponent())
             .collidable()
             .build();
     }
