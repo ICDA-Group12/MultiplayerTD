@@ -47,12 +47,12 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
  */
 public class App extends GameApplication {
     public static final Point2D[] pathCoordinates= {
-            new Point2D(300, 390),
-            new Point2D(277, 380),
-            new Point2D(277, 200),
-            new Point2D(450, 200),
-            new Point2D(450, 390),
-            new Point2D(800, 390)
+            new Point2D(252, 404),
+            new Point2D(252, 404),
+            new Point2D(252, 240),
+            new Point2D(442, 240),
+            new Point2D(442, 404),
+            new Point2D(800, 404)
     };
     public Button mk2_btn;
     public Button mk1_btn;
@@ -73,7 +73,7 @@ public class App extends GameApplication {
     private SpaceRepository repository;
     private Space gameSpace;
     private PlayerType playerID;
-    private Parent root;
+    public static Parent root;
 
     @Override
     protected void initSettings(GameSettings settings) {
@@ -153,7 +153,7 @@ public class App extends GameApplication {
                         tier = "TurretMK1static";
                     } else {
                         // Spawn a turret at the mouse position and add it to the list of turrets
-                        tempTurret = spawn("TurretMK2", FXGL.getInput().getMousePositionWorld());
+                        tempTurret = spawn("TurretMK2static", FXGL.getInput().getMousePositionWorld());
                         tier = "TurretMK2static";
                     }
                     try {
@@ -166,7 +166,7 @@ public class App extends GameApplication {
                     }
                 } else {
                     tier = "EnemyMK1";
-                    tempTurret = spawn("EnemyMK1", FXGL.getInput().getMousePositionWorld());
+                    tempTurret = spawn("EnemyMK1static", FXGL.getInput().getMousePositionWorld());
                     try {
                         //gameSpace.put(getOppositePlayer(playerID), "spawn", tier, tempTurret.getCenter());
                         Tuple t = new Tuple("spawn", tier, tempTurret.getCenter());
@@ -202,13 +202,6 @@ public class App extends GameApplication {
                     if (Objects.equals(btn.getId(), "mk1_btn")) {
                         draggedEntity = spawn("TurretMK1", FXGL.getInput().getMousePositionWorld());
 
-                        // Pause all components draggedEntity.getComponents() except for the DraggableComponent;
-                        List<Component> components = draggedEntity.getComponents();
-                        for (Component component : components) {
-                            if (component.getClass() != SpawnDraggableComponent.class){
-                                component.pause();
-                            }
-                        }
 
 
                         System.out.println("mk1_btn clicked");
@@ -228,11 +221,6 @@ public class App extends GameApplication {
             if (e.getButton() == MouseButton.PRIMARY) {
                 if (draggedEntity != null) {
 
-                    // Spawn the entity at the mouse position and add it to the list of turrets
-                    List<Component> components = draggedEntity.getComponents();
-                    for (Component component : components) {
-                        component.resume();
-                    }
                     draggedEntity = null;
                 }
             }
@@ -296,11 +284,15 @@ public class App extends GameApplication {
 
         getGameWorld().addEntityFactory(new Factory());
 
-        
-        run(()-> {
-            spawn("EnemyMK1", 0,390);
+        if (playerID == PlayerType.PLAYER1){
+            run(()-> {
+                spawn("EnemyMK1", 0,390);
+                Tuple t = new Tuple("spawn", "EnemyMK1", new Point2D(0, 390));
+                //sendToAllPlayers(t, playerID);
 
-        }, Duration.seconds(0.5));
+            }, Duration.seconds(0.5));
+
+        }
 
 
     }
