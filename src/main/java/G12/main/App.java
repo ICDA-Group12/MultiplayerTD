@@ -168,7 +168,7 @@ public class App extends GameApplication {
             return;
         }
 
-        getGameWorld().addEntityFactory(new Factory());
+        getGameWorld().addEntityFactory(new CustomEntityFactory());
 
         if (playerID == PlayerType.PLAYER1){
             run(()-> {
