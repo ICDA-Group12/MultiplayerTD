@@ -17,8 +17,10 @@ import com.almasb.fxgl.app.scene.MenuType;
 import com.almasb.fxgl.app.scene.SceneFactory;
 import com.almasb.fxgl.audio.Audio;
 import com.almasb.fxgl.dsl.FXGL;
+import com.almasb.fxgl.dsl.components.ProjectileComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.input.Input;
+import com.almasb.fxgl.multiplayer.PongReplicationEvent;
 import com.almasb.fxgl.physics.CollisionHandler;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
@@ -37,9 +39,9 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import static com.almasb.fxgl.dsl.FXGL.getPhysicsWorld;
-import static com.almasb.fxgl.dsl.FXGL.run;
 import static com.almasb.fxgl.dsl.FXGL.spawn;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
 
@@ -68,13 +70,14 @@ public class App extends GameApplication {
 
     private String tier = "";
     private Entity tempTurret = null;
+    private Entity bullet = null;
 
 
     // pSpaces
     private String uri;
     private SpaceRepository repository;
-    private Space gameSpace;
-    private PlayerType playerID = null;
+    public static Space gameSpace;
+    public static PlayerType playerID = null;
     public Parent root;
 
     @Override
@@ -148,7 +151,6 @@ public class App extends GameApplication {
                 uri = "tcp://localhost:31415/game?keep";
                 gameSpace = new RemoteSpace(uri);
                 System.out.println("Connected to game space as client");
-                gameSpace.put("newPlayer");
 
 
                 Object [] getPlayers = gameSpace.get(new ActualField("players"),new FormalField(ArrayList.class));
@@ -158,6 +160,8 @@ public class App extends GameApplication {
                     System.out.println("No available player");
                     return;
                 }
+
+                gameSpace.put("newPlayer", playerID);
 
 
             }
@@ -180,7 +184,9 @@ public class App extends GameApplication {
                     throw new RuntimeException(e);
                 }
 
-            }, Duration.seconds(0.5));
+                return null;
+            }, Duration.seconds(1));
+
 
         }
 
@@ -320,23 +326,65 @@ public class App extends GameApplication {
 
 
             if (playerID == PlayerType.PLAYER1) {
-                response = gameSpace.getp(new ActualField("newPlayer"));
+                response = gameSpace.getp(new ActualField("newPlayer"), new FormalField(PlayerType.class));
                 if (response != null) {
                     System.out.println("New player joined");
+
+                    PlayerType playerToSendTo = (PlayerType) response[1];
+                    getGameWorld().getEntitiesByType(EntityType.ENEMY, EntityType.BULLET).forEach(enemy -> {
+
+                        Tuple t = null;
+                        if (enemy.getType() == EntityType.ENEMY) {
+                            t = new Tuple("spawn", "EnemyMK1", enemy.getCenter());
+                        } else if (enemy.getType() == EntityType.BULLET) {
+                            t = new Tuple("spawn", "BulletMK1", enemy.getCenter(), enemy.getComponent(ProjectileComponent.class).getDirection());
+                        }
+                        try {
+                            gameSpace.put( playerToSendTo, t);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
                 }
             }
 
-            if(gameSpace.queryp(new ActualField(playerID), new FormalField(Tuple.class)) != null) {
-                //System.out.println("Received from other player");
-                response = gameSpace.get(new ActualField(playerID),  new FormalField(Tuple.class));
+            //System.out.println("Received from other player");
+            response = gameSpace.getp(new ActualField(playerID),  new FormalField(Tuple.class));
+            if (response != null) {
                 Tuple t = (Tuple) response[1];
                 switch (t.getElementAt(0).toString()){
                     case "spawn":
                         String entityType = t.getElementAt(1).toString();
                         Point2D entityPos = (Point2D) t.getElementAt(2);
-                        spawn(entityType, entityPos);
-                        break;
 
+                        switch (entityType) {
+                            case "EnemyMK1":
+                                spawn(entityType, entityPos.getX(), entityPos.getY());
+                                break;
+
+                            case "TurretMK1static":
+                                if (playerID == PlayerType.PLAYER1){
+                                    spawn("TurretMK1static", entityPos);
+                                }else {
+                                    spawn("TurretMK1", entityPos);
+                                }
+                                break;
+
+                            case "TurretMK2static":
+                                if (playerID == PlayerType.PLAYER1){
+                                    spawn("TurretMK2static", entityPos);
+                                }else {
+                                    spawn("TurretMK2", entityPos);
+                                }
+                                break;
+
+                            case "BulletMK1":
+                                System.out.println("BulletMK1");
+                                Point2D direction = (Point2D) t.getElementAt(3);
+                                bullet = spawn(entityType, entityPos);
+                                bullet.addComponent(new ProjectileComponent(direction, 200));
+                                break;
+                        }
                 }
             }
 
@@ -368,7 +416,10 @@ public class App extends GameApplication {
 
         }
 
-        getGameWorld().getEntitiesByType(EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(this::updateSpecificTurretTarget);
+
+        if (playerID == PlayerType.PLAYER1) {
+            getGameWorld().getEntitiesByType(EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(this::updateSpecificTurretTarget);
+        }
 
         // if(turrets == null) return;
         /*
@@ -394,7 +445,7 @@ public class App extends GameApplication {
 
     }
 
-    private void sendToAllPlayersOnline(Tuple fields, PlayerType playerID) throws InterruptedException {
+    public static void sendToAllPlayersOnline(Tuple fields, PlayerType playerID) throws InterruptedException {
         //get all players from gameSpace
         Object [] getPlayers = gameSpace.get(new ActualField("players"),new FormalField(ArrayList.class));
         ArrayList<Object> players = (ArrayList<Object>) getPlayers[1];
@@ -424,7 +475,11 @@ public class App extends GameApplication {
                 // hitSound.play();
                 Enemy.removeFromWorld();
                 // enemies.remove(Enemy);
-                updateSpecificTurretTarget(Bullet.getComponent(StoreEntityParentComponent.class).getParentEntity());
+
+
+                if (playerID == PlayerType.PLAYER1){
+                    updateSpecificTurretTarget(Bullet.getComponent(StoreEntityParentComponent.class).getParentEntity());
+                }
                 Bullet.removeFromWorld();
             }
         });
@@ -448,6 +503,7 @@ public class App extends GameApplication {
             double angle = Math.atan2(closestEnemy[0].getY() - turret.getY(), closestEnemy[0].getX() - turret.getX());
             // Slowly rotate to the enemy
             turret.setRotation(angle * 180 / Math.PI);
+
         }
 
         turret.getComponent(ShootingComponent.class).updateTarget(closestEnemy[0]);

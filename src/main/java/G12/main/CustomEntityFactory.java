@@ -3,8 +3,11 @@ package G12.main;
 import G12.main.entities.EntityType;
 import G12.main.entities.entityFunctions.MoveEnemyComponent;
 import G12.main.entities.entityFunctions.ShootingComponent;
+import G12.main.entities.entityFunctions.StoreEntityParentComponent;
 import com.almasb.fxgl.dsl.EntityBuilder;
+import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
+import com.almasb.fxgl.dsl.components.ProjectileComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.entity.SpawnData;
@@ -24,7 +27,6 @@ public class CustomEntityFactory implements EntityFactory {
            .type(EntityType.SPRITE)
            .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
            .viewWithBBox(new ImageView(view))
-//                .with(new SpawnDraggableComponent())
            .collidable()
            .build();
     }
@@ -50,7 +52,6 @@ public class CustomEntityFactory implements EntityFactory {
             .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
             .viewWithBBox(new ImageView(view))
 //                .with(new PosistionComponent())
-            .with(new ShootingComponent(0.5, 200, ShootingComponent.BulletType.NORMAL))
 //                .with(new SpawnDraggableComponent())
             .collidable()
             .build();
@@ -66,6 +67,18 @@ public class CustomEntityFactory implements EntityFactory {
                 .with(new ShootingComponent(0.5, 200, ShootingComponent.BulletType.NORMAL))
                 .collidable()
                 .build();
+    }
+
+    @Spawns("BulletMK1")
+    public Entity BulletMK1(SpawnData data) {
+        Image view = new Image("assets/textures/bullets/BulletMK1.png");
+
+        return new EntityBuilder(data)
+                .type(EntityType.BULLET)
+                .viewWithBBox(new ImageView(view))
+                .with(new OffscreenCleanComponent())
+                .collidable()
+                .buildAndAttach();
     }
 
     @Spawns("EnemyMK1")
