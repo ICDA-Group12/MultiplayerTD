@@ -174,6 +174,12 @@ public class App extends GameApplication {
 
         getGameWorld().addEntityFactory(new CustomEntityFactory());
 
+        spawnEnemies(1,10);
+
+
+    }
+
+    private static void spawnEnemies(double delay, int limit) {
         if (playerID == PlayerType.PLAYER1){
             run(()-> {
                 spawn("EnemyMK1", 0,390);
@@ -185,12 +191,10 @@ public class App extends GameApplication {
                 }
 
                 return null;
-            }, Duration.seconds(1));
+            }, Duration.seconds(delay), limit);
 
 
         }
-
-
     }
 
     private void getAvailablePlayer(ArrayList<Object> players) throws InterruptedException {
@@ -212,6 +216,13 @@ public class App extends GameApplication {
     protected void initUI() {
         loadScene("Level1Nice.fxml");
 
+        Button startRound = new Button("Start Next Round");
+
+        startRound.setOnAction(e -> {
+            spawnEnemies(0.5, 10);
+        });
+
+        getGameScene().addUINode(startRound);
 
     }
 
@@ -388,17 +399,17 @@ public class App extends GameApplication {
                 }
             }
 
-            response = gameSpace.getp(new ActualField("gold"), new FormalField(Integer.class));
-            if (response != null){
-                int tempGold = (int) response[1];
-                if (tempGold != gold){
-                    gold = tempGold;
-                    System.out.println("Gold: " + gold);
-                }
-                //System.out.println("Gold: " + gold);
-                gameSpace.put("gold", gold);
-                if (gold <= 0){
-                    gameOver();
+            if (gameSpace.queryp(new ActualField("gold"), new ActualField(gold)) == null) {
+                response = gameSpace.queryp(new ActualField("gold"), new FormalField(Integer.class));
+                if (response != null){
+                    int tempGold = (int) response[1];
+                    if (tempGold != gold){
+                        gold = tempGold;
+                        System.out.println("Gold: " + gold);
+                    }
+                    if (gold <= 0){
+                        gameOver();
+                    }
                 }
             }
 
@@ -447,9 +458,8 @@ public class App extends GameApplication {
 
     public static void sendToAllPlayersOnline(Tuple fields, PlayerType playerID) throws InterruptedException {
         //get all players from gameSpace
-        Object [] getPlayers = gameSpace.get(new ActualField("players"),new FormalField(ArrayList.class));
+        Object [] getPlayers = gameSpace.query(new ActualField("players"),new FormalField(ArrayList.class));
         ArrayList<Object> players = (ArrayList<Object>) getPlayers[1];
-        gameSpace.put("players", players);
         for (PlayerType player : PlayerType.values()) {
             if (players.contains(player.toString()) && player != playerID) {
                 //System.out.println("Sending to " + player);
