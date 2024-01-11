@@ -21,12 +21,24 @@ public class CustomEntityFactory implements EntityFactory {
         Image view = new Image("assets/textures/turrets/TurretMK1.png");
 
         return new EntityBuilder(data)
-           .type(EntityType.TURRETMK1)
+           .type(EntityType.SPRITE)
            .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
            .viewWithBBox(new ImageView(view))
-           .with(new ShootingComponent(1, 200, ShootingComponent.BulletType.NORMAL))
+//                .with(new SpawnDraggableComponent())
            .collidable()
            .build();
+    }
+    @Spawns("TurretMK1static")
+    public Entity TurretMK1static(SpawnData data) {
+        Image view = new Image("assets/textures/turrets/TurretMK1.png");
+
+        return new EntityBuilder(data)
+                .type(EntityType.TURRETMK1)
+                .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
+                .viewWithBBox(new ImageView(view))
+                .with(new ShootingComponent(1, 200, ShootingComponent.BulletType.NORMAL))
+                .collidable()
+                .build();
     }
 
     @Spawns("TurretMK2")
@@ -34,12 +46,26 @@ public class CustomEntityFactory implements EntityFactory {
         Image view = new Image("assets/textures/turrets/TurretMK2.png");
 
         return new EntityBuilder(data)
-            .type(EntityType.TURRETMK2)
+            .type(EntityType.SPRITE)
             .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
             .viewWithBBox(new ImageView(view))
+//                .with(new PosistionComponent())
             .with(new ShootingComponent(0.5, 200, ShootingComponent.BulletType.NORMAL))
+//                .with(new SpawnDraggableComponent())
             .collidable()
             .build();
+    }
+    @Spawns("TurretMK2static")
+    public Entity TurretMK2static(SpawnData data) {
+        Image view = new Image("assets/textures/turrets/TurretMK2.png");
+
+        return new EntityBuilder(data)
+                .type(EntityType.TURRETMK2)
+                .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
+                .viewWithBBox(new ImageView(view))
+                .with(new ShootingComponent(0.5, 200, ShootingComponent.BulletType.NORMAL))
+                .collidable()
+                .build();
     }
 
     @Spawns("EnemyMK1")
