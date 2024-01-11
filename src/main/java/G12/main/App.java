@@ -49,7 +49,6 @@ public class App extends GameApplication {
     };
 
     protected boolean turretMK1 = false;
-    protected boolean turretMK2 = false;
     protected boolean selected = true;
 
     // pSpaces
@@ -64,29 +63,15 @@ public class App extends GameApplication {
         settings.setWidth(800);
         settings.setHeight(600);
         settings.setTitle("Tower Defense");
-
     }
 
     @Override
     protected void initUI() {
-
-        Button serverButton = new Button("Host Game");
-        Button clientButton = new Button("Join Game");
-
         Button turretMK1Button = new Button("Turret MK1");
         Button turretMK2Button = new Button("Turret MK2");
 
         FXGL.addUINode(turretMK1Button, 100, 100);
         FXGL.addUINode(turretMK2Button, 100, 200);
-
-        serverButton.setOnAction(e -> {
-        });
-
-
-
-
-        clientButton.setOnAction(e -> {
-        });
 
         turretMK1Button.setOnAction(e -> {
             turretMK1 = true;
@@ -154,7 +139,7 @@ public class App extends GameApplication {
 
         // 1. get input service
         Input input = FXGL.getInput();
-        getGameWorld().addEntityFactory(new Factory());
+        getGameWorld().addEntityFactory(new CustomEntityFactory());
 
         
         run(()-> {

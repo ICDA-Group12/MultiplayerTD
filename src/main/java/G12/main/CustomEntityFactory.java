@@ -4,7 +4,6 @@ import G12.main.entities.EntityType;
 import G12.main.entities.entityFunctions.MoveEnemyComponent;
 import G12.main.entities.entityFunctions.ShootingComponent;
 import com.almasb.fxgl.dsl.EntityBuilder;
-import com.almasb.fxgl.dsl.components.KeepOnScreenComponent;
 import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
@@ -15,7 +14,7 @@ import com.almasb.fxgl.physics.box2d.dynamics.BodyType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public class Factory implements EntityFactory {
+public class CustomEntityFactory implements EntityFactory {
 
     @Spawns("TurretMK1")
     public Entity TurretMK1(SpawnData data) {
