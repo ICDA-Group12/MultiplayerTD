@@ -77,7 +77,7 @@ public class ShootingComponent extends Component{
         Point2D toTarget = target.getCenter();
         Point2D direction = toTarget.subtract(fromTarget).normalize();
         Tuple bulletTuple = new Tuple("spawn", "BulletMK1", entity.getCenter(), direction);
-        sendToAllPlayersOnline(bulletTuple, playerID);
+        sendToAllPlayersOnline(bulletTuple);
 
         FXGL.entityBuilder()
                 .type(EntityType.BULLET)

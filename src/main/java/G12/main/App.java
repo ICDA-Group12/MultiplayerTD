@@ -19,6 +19,7 @@ import com.almasb.fxgl.audio.Audio;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.dsl.components.ProjectileComponent;
 import com.almasb.fxgl.entity.Entity;
+import com.almasb.fxgl.entity.Spawns;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.physics.CollisionHandler;
 import javafx.event.ActionEvent;
@@ -27,6 +28,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
@@ -61,20 +63,25 @@ public class App extends GameApplication {
     public Button plane1_btn;
 
     private static String role;
+    public TextField joincodefield;
 
+    private boolean timerExpired = false;
+    private boolean clientsDoneSpawning = true;
     private boolean isDragging = false;
     private Entity draggedEntity = null;
+    private Entity nextEntity = null;
 
     private String tier = "";
     private Entity bullet = null;
 
 
     // pSpaces
-    private String uri;
+    private static String uri;
     private String errorMsg;
     private static SpaceRepository repository;
-    public static Space gameSpace;
+    public static Space gameSpace = null;
     public static PlayerType playerID = null;
+    private static ArrayList<PlayerType> playersInGame = new ArrayList<>();
     public Parent root;
 
     @Override
@@ -135,28 +142,44 @@ public class App extends GameApplication {
                 gold = 1000;
                 System.out.println("Gold: " + gold);
 
-
-                ArrayList<Object> players = new ArrayList<>();
                 playerID = PlayerType.PLAYER1;
-                players.add(playerID);
-                gameSpace.put("players", players);
-
-
+                playersInGame.add(playerID);
+                gameSpace.put("players", playersInGame);
             } else {
-                uri = "tcp://localhost:31415/game?keep";
+                System.out.println("Connecting to server..." + uri);
                 gameSpace = new RemoteSpace(uri);
+
                 System.out.println("Connected to game space as client");
 
-
-                Object [] getPlayers = gameSpace.get(new ActualField("players"),new FormalField(ArrayList.class));
-                ArrayList<Object> players = (ArrayList<Object>) getPlayers[1];
-                getAvailablePlayer(players);
-                if (playerID == null){
-                    System.out.println("No available player");
-                    return;
+                gameSpace.put("newPlayer", PlayerType.PLAYER1);
+                Object [] getPlayers = gameSpace.get(new ActualField("newPlayer"), new FormalField(PlayerType.class), new ActualField("answer"));
+                System.out.println("Player " + getPlayers[1] + " joined the game");
+                switch (getPlayers[1].toString()){
+                    case "PLAYER2":
+                        playerID = PlayerType.PLAYER2;
+                        break;
+                    case "PLAYER3":
+                        playerID = PlayerType.PLAYER3;
+                        break;
+                    case "PLAYER4":
+                        playerID = PlayerType.PLAYER4;
+                        break;
+                    default:
+                        errorMsg = "No available player";
+                        gameOver();
+                        return;
                 }
 
-                gameSpace.put("newPlayer", playerID);
+
+//                Object [] getPlayers = gameSpace.get(new ActualField("players"),new FormalField(ArrayList.class));
+//                ArrayList<Object> players = (ArrayList<Object>) getPlayers[1];
+//                getAvailablePlayer(players);
+//                if (playerID == null){
+//                    System.out.println("No available player");
+//                    return;
+//                }
+//
+//                gameSpace.put("newPlayer", playerID);
 
 
             }
@@ -179,7 +202,7 @@ public class App extends GameApplication {
                 spawn("EnemyMK1", 0,390);
                 Tuple t = new Tuple("spawn", "EnemyMK1", new Point2D(0, 390));
                 try {
-                    sendToAllPlayersOnline(t, playerID);
+                    sendToAllPlayersOnline(t);
                 } catch (InterruptedException e) {
                 }
 
@@ -190,19 +213,20 @@ public class App extends GameApplication {
         }
     }
 
-    private void getAvailablePlayer(ArrayList<Object> players) throws InterruptedException {
+    private PlayerType getAvailablePlayer() {
 
+        System.out.println("Checking for available player");
         //get first available player
         for (PlayerType player : PlayerType.values()) {
-            if (!players.contains(player.toString())) {
-                playerID = player;
-                players.add(playerID);
-                System.out.println("Player " + playerID + " joined the game");
-                break;
+            System.out.println("Checking player " + player);
+            if (!playersInGame.contains(player)) {
+                playersInGame.add(player);
+                System.out.println("Player " + player + " joined the game");
+                return player;
             }
         }
 
-        gameSpace.put("players", players);
+        return null;
     }
 
     @Override
@@ -244,7 +268,7 @@ public class App extends GameApplication {
                 Object[] gold;
                 int goldAmount;
 
-                if (!isDragging) {
+                if (!isDragging && clientsDoneSpawning) {
                     if (e.getTarget().getClass() == Button.class) {
                         Button btn = (Button) e.getTarget();
                         if (Objects.equals(btn.getId(), "mk1_btn")) {
@@ -295,13 +319,27 @@ public class App extends GameApplication {
                                     System.out.println("y, " + y + "");
                                     System.out.println("x, " + x + "");
                                     draggedEntity.removeFromWorld();
-                                    spawn(tier, e.getX(), e.getY());
-                                    isDragging = false;
-                                    try {
-                                        sendToAllPlayersOnline(new Tuple("spawn",tier, new Point2D(e.getX(), e.getY())), playerID);
-                                    } catch (InterruptedException ex) {
-                                        throw new RuntimeException(ex);
+
+                                    if (playerID == PlayerType.PLAYER1){
+                                        try {
+                                            nextEntity = draggedEntity;
+                                            sendToAllPlayersOnline(new Tuple("spawn",tier, draggedEntity.getCenter()));
+                                        } catch (InterruptedException ex) {
+                                            throw new RuntimeException(ex);
+                                        }
+                                        clientsDoneSpawning = false;
+                                        getGameTimer().runOnceAfter(() -> {
+                                            timerExpired = true;
+                                        }, Duration.seconds(1));
+
+                                    }else {
+                                        try {
+                                            gameSpace.put(PlayerType.PLAYER1, new Tuple("spawn",tier, draggedEntity.getCenter()));
+                                        } catch (InterruptedException ex) {
+                                            throw new RuntimeException(ex);
+                                        }
                                     }
+                                    isDragging = false;
                                 }else {
                                     System.out.println("NOT GOOD TO GO");
                                     draggedEntity.removeFromWorld();
@@ -337,32 +375,63 @@ public class App extends GameApplication {
         }
             //System.out.println("Player 1");
         try {
-
-
             if (playerID == PlayerType.PLAYER1) {
-                response = gameSpace.getp(new ActualField("newPlayer"), new FormalField(PlayerType.class));
+                response = gameSpace.getp(new ActualField("newPlayer"), new ActualField(playerID));
+
+
                 if (response != null) {
-                    System.out.println("New player joined");
+                    PlayerType playerToSendTo = getAvailablePlayer();
+                    if (playerToSendTo != null) {
+                        System.out.println("New player joined");
+                        gameSpace.put("newPlayer", playerToSendTo, "answer");
+                        getGameWorld().getEntitiesByType(EntityType.ENEMY, EntityType.BULLET, EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(enemy -> {
 
-                    PlayerType playerToSendTo = (PlayerType) response[1];
-                    getGameWorld().getEntitiesByType(EntityType.ENEMY, EntityType.BULLET, EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(enemy -> {
+                            Tuple t = null;
+                            if (enemy.getType() == EntityType.ENEMY) {
+                                t = new Tuple("spawn", "EnemyMK1", enemy.getCenter());
+                            } else if (enemy.getType() == EntityType.BULLET) {
+                                t = new Tuple("spawn", "BulletMK1", enemy.getCenter(), enemy.getComponent(ProjectileComponent.class).getDirection());
+                            } else if (enemy.getType() == EntityType.TURRETMK1) {
+                                t = new Tuple("spawn", "TurretMK1static", enemy.getCenter());
+                            } else if (enemy.getType() == EntityType.TURRETMK2) {
+                                t = new Tuple("spawn", "TurretMK2static", enemy.getCenter());
+                            }
+                            try {
+                                gameSpace.put(playerToSendTo, t);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    } else {
+                        gameSpace.put("newPlayer", "No Space");
+                    }
+                }
 
-                        Tuple t = null;
-                        if (enemy.getType() == EntityType.ENEMY) {
-                            t = new Tuple("spawn", "EnemyMK1", enemy.getCenter());
-                        } else if (enemy.getType() == EntityType.BULLET) {
-                            t = new Tuple("spawn", "BulletMK1", enemy.getCenter(), enemy.getComponent(ProjectileComponent.class).getDirection());
-                        } else if (enemy.getType() == EntityType.TURRETMK1) {
-                            t = new Tuple("spawn", "TurretMK1static", enemy.getCenter());
-                        } else if (enemy.getType() == EntityType.TURRETMK2) {
-                            t = new Tuple("spawn", "TurretMK2static", enemy.getCenter());
+                if (!clientsDoneSpawning){
+                    boolean allPlayersDone = true;
+                    // get "done" from all players in playersInGame
+                    if(playersInGame.size() == 1){
+                        clientsDoneSpawning = true;
+                        timerExpired = false;
+                    } else {
+                        for (PlayerType player : playersInGame) {
+                            if (player != playerID) {
+                                response = gameSpace.queryp(new ActualField("Done"), new ActualField(player));
+                                if (response == null && timerExpired) {
+                                    System.out.println("Player " + player + " did not respond");
+                                    playersInGame.remove(player);
+                                    clientsDoneSpawning = false;
+                                    allPlayersDone = false;
+                                    break;
+                                }
+                            }
                         }
-                        try {
-                            gameSpace.put( playerToSendTo, t);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
+                    }
+                    if(allPlayersDone){
+                        clientsDoneSpawning = true;
+                        timerExpired = false;
+                        spawn(tier, nextEntity.getCenter());
+                    }
                 }
 
                 Object[] lives = gameSpace.queryp(new ActualField("lives"), new FormalField(Integer.class));
@@ -381,40 +450,59 @@ public class App extends GameApplication {
                 response = gameSpace.getp(new ActualField(playerID),  new FormalField(Tuple.class));
                 if (response != null) {
                     Tuple t = (Tuple) response[1];
-                    switch (t.getElementAt(0).toString()){
-                        case "spawn":
-                            String entityType = t.getElementAt(1).toString();
-                            Point2D entityPos = (Point2D) t.getElementAt(2);
 
-                            switch (entityType) {
-                                case "EnemyMK1":
-                                    spawn(entityType, entityPos.getX(), entityPos.getY());
-                                    break;
 
-                                case "TurretMK1static":
-                                    if (playerID == PlayerType.PLAYER1){
-                                        spawn("TurretMK1static", entityPos);
-                                    }else {
-                                        spawn("TurretMK1", entityPos);
-                                    }
-                                    break;
+                    if (playerID != PlayerType.PLAYER1) {
+                        switch (t.getElementAt(0).toString()){
+                            case "spawn":
+                                String entityType = t.getElementAt(1).toString();
+                                Point2D entityPos = (Point2D) t.getElementAt(2);
 
-                                case "TurretMK2static":
-                                    if (playerID == PlayerType.PLAYER1){
-                                        spawn("TurretMK2static", entityPos);
-                                    }else {
-                                        spawn("TurretMK2", entityPos);
-                                    }
-                                    break;
+                                switch (entityType) {
+                                    case "EnemyMK1":
+                                        spawn(entityType, entityPos.getX(), entityPos.getY());
+                                        break;
 
-                                case "BulletMK1":
-                                    System.out.println("BulletMK1");
-                                    Point2D direction = (Point2D) t.getElementAt(3);
-                                    bullet = spawn(entityType, entityPos);
-                                    bullet.addComponent(new ProjectileComponent(direction, 200));
-                                    break;
-                            }
+                                    case "TurretMK1static":
+                                        if (playerID == PlayerType.PLAYER1){
+                                            spawn("TurretMK1static", entityPos);
+                                        }else {
+                                            spawn("TurretMK1", entityPos);
+                                        }
+                                        gameSpace.put("Done", playerID);
+                                        break;
+
+                                    case "TurretMK2static":
+                                        if (playerID == PlayerType.PLAYER1){
+                                            spawn("TurretMK2static", entityPos);
+                                        }else {
+                                            spawn("TurretMK2", entityPos);
+                                        }
+                                        gameSpace.put("Done", playerID);
+                                        break;
+
+                                    case "BulletMK1":
+                                        System.out.println("BulletMK1");
+                                        Point2D direction = (Point2D) t.getElementAt(3);
+                                        bullet = spawn(entityType, entityPos);
+                                        bullet.addComponent(new ProjectileComponent(direction, 200));
+                                        break;
+                                }
+                        }
+                    }else {
+
+                        try {
+                            nextEntity = spawn(t.getElementAt(1).toString(), (Point2D) t.getElementAt(2));
+                            sendToAllPlayersOnline(t);
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        clientsDoneSpawning = false;
+                        getGameTimer().runOnceAfter(() -> {
+                            timerExpired = true;
+                        }, Duration.seconds(1));
                     }
+
                 }
             }
 
@@ -436,7 +524,7 @@ public class App extends GameApplication {
             if (draggedEntity != null && isDragging) {
                 // overwrote draggedEntity's position
                 //draggedEntity.getComponent(PosistionComponent.class).setPosistion(getInput().getMousePositionWorld());
-                draggedEntity.setPosition(getInput().getMousePositionWorld().subtract(draggedEntity.getHeight() / 2, draggedEntity.getWidth() / 2));
+                draggedEntity.setPosition(getInput().getMouseXWorld()- draggedEntity.getWidth() / 2, getInput().getMouseYWorld() - draggedEntity.getHeight() / 2);
 
             }
 
@@ -448,22 +536,11 @@ public class App extends GameApplication {
         } catch (InterruptedException e) {
             getGameController().gotoMainMenu();
         }
-
-
-
-        // if(turrets == null) return;
-        /*
-        for (Entity turret : turrets) {
-            updateSpecificTurretTarget(turret);
-        }
-
-         */
-
-
     }
 
 
-    private void sendToAllPlayers(Tuple fields, PlayerType currentPlayer) throws InterruptedException {
+
+        private void sendToAllPlayers(Tuple fields, PlayerType currentPlayer) throws InterruptedException {
 
         System.out.println("Sending to all other players... " + tier);
         for (PlayerType player : PlayerType.values()) {
@@ -475,12 +552,11 @@ public class App extends GameApplication {
 
     }
 
-    public static void sendToAllPlayersOnline(Tuple fields, PlayerType playerID) throws InterruptedException {
+    public static void sendToAllPlayersOnline(Tuple fields) throws InterruptedException {
         //get all players from gameSpace
-        Object [] getPlayers = gameSpace.query(new ActualField("players"),new FormalField(ArrayList.class));
-        ArrayList<Object> players = (ArrayList<Object>) getPlayers[1];
+
         for (PlayerType player : PlayerType.values()) {
-            if (players.contains(player.toString()) && player != playerID) {
+            if (playersInGame.contains(player) && player != playerID) {
                 //System.out.println("Sending to " + player);
                 // Assuming pSpace supports putting multiple values at once
                 gameSpace.put(player, fields);
@@ -561,6 +637,7 @@ public class App extends GameApplication {
 
 
         }else {
+            gameSpace = null;
             System.out.println("no playerID");
             getGameController().gotoMainMenu();
         }
@@ -574,8 +651,11 @@ public class App extends GameApplication {
     }
 
     public void joinGameButton(ActionEvent actionEvent) {
-        System.out.println("Joining game...");
+        String joinCode = joincodefield.getText();
+        System.out.println("Joining game..." + joinCode);
         role = "client";
+        uri = "tcp://localhost:31415/" + joinCode + "?keep";
+        gameSpace = null;
         FXGL.getGameController().startNewGame();;
     }
 
