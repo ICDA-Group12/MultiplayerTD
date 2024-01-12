@@ -204,27 +204,27 @@ public class App extends GameApplication {
 
             System.out.println("Connected to game space as client");
 
-            Object[] getPlayers = new Object[0];
+            Object[] getResponse = new Object[0];
             try {
                 gameSpace.put("newPlayer", PlayerType.PLAYER1);
-                getPlayers = gameSpace.get(new ActualField("newPlayer"), new FormalField(String.class), new ActualField("answer"));
+                getResponse = gameSpace.get(new ActualField("newPlayer"), new FormalField(String.class), new ActualField("answer"));
             } catch (InterruptedException e) {
                 errorMsg = "Could not connect to game space";
                 System.out.println(errorMsg);
                 getGameController().gotoMainMenu();
             }
-            switch (getPlayers[1].toString()) {
+            switch (getResponse[1].toString()) {
                 case "PLAYER2":
                     playerID = PlayerType.PLAYER2;
-                    System.out.println("Player " + getPlayers[1] + " joined the game");
+                    System.out.println("Player " + getResponse[1] + " joined the game");
                     break;
                 case "PLAYER3":
                     playerID = PlayerType.PLAYER3;
-                    System.out.println("Player " + getPlayers[1] + " joined the game");
+                    System.out.println("Player " + getResponse[1] + " joined the game");
                     break;
                 case "PLAYER4":
                     playerID = PlayerType.PLAYER4;
-                    System.out.println("Player " + getPlayers[1] + " joined the game");
+                    System.out.println("Player " + getResponse[1] + " joined the game");
                     break;
                 default:
                     errorMsg = "No available player";
@@ -367,7 +367,6 @@ public class App extends GameApplication {
                                         timerExpired = false;
                                         getGameTimer().runOnceAfter(() -> {
                                             timerExpired = true;
-                                            System.out.println(timerExpired);
                                         }, Duration.seconds(1));
 
                                     }else {
@@ -415,8 +414,8 @@ public class App extends GameApplication {
             if (playerID == PlayerType.PLAYER1) {
                 response = gameSpace.getp(new ActualField("newPlayer"), new ActualField(playerID));
                 if (response != null) {
-                    PlayerType playerToSendTo = getAvailablePlayer();
-                    if (playerToSendTo != null) {
+                    if (playersInGame.size() >= 4) {
+                        PlayerType playerToSendTo = getAvailablePlayer();
                         System.out.println("New player joined");
                         gameSpace.put("newPlayer", playerToSendTo.toString(), "answer");
                         getGameWorld().getEntitiesByType(EntityType.ENEMY, EntityType.BULLET, EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(enemy -> {
@@ -682,13 +681,11 @@ public class App extends GameApplication {
             }
 
             playerID = null;
-            System.out.println("PlayerID set to null");
             getGameController().gotoMainMenu();
 
 
         } else {
             gameSpace = null;
-            System.out.println("no playerID");
             getGameController().gotoMainMenu();
         }
 
