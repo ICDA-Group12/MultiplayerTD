@@ -74,6 +74,7 @@ public class App extends GameApplication {
     private Entity nextEntity = null;
 
     private String tier = "";
+    private Point2D spawnPoint = null;
     private Entity bullet = null;
 
 
@@ -84,7 +85,7 @@ public class App extends GameApplication {
     private static SpaceRepository repository;
     public static Space gameSpace = null;
     public static PlayerType playerID = null;
-    private static ArrayList<PlayerType> playersInGame = new ArrayList<>();
+    private static ArrayList<PlayerType> playersInGame;
     public Parent root;
 
     @Override
@@ -125,7 +126,6 @@ public class App extends GameApplication {
                 try {
                     gameSpace.put("leavingGame", playerID);
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
                 }
             }
             System.out.println("onExit()");
@@ -154,92 +154,103 @@ public class App extends GameApplication {
     @Override
     protected void initGame() {
 
-        try {
-//            BufferedReader teminalInput = new BufferedReader(new InputStreamReader(System.in));
-//            role = teminalInput.readLine();
-//            String role = "server";
-            if(role.equalsIgnoreCase("server")){
-                uri = "tcp://localhost:31415/?keep";
-                gameSpace = new SequentialSpace();
-                repository = new SpaceRepository();
-                repository.add(spaceName, gameSpace);
-                repository.addGate(uri);
-                System.out.println("Connected to game space as server");
+        
+        if(role.equalsIgnoreCase("server")){
+            uri = "tcp://localhost:31415/?keep";
+            gameSpace = new SequentialSpace();
+            repository = new SpaceRepository();
+            repository.add(spaceName, gameSpace);
+            repository.addGate(uri);
+            System.out.println("Connected to game space as server");
+            try {
                 gameSpace.put("gold", 1000);
                 gameSpace.put("lives", 10);
                 gold = 1000;
                 System.out.println("Gold: " + gold);
-
+                playersInGame = new ArrayList<>();
                 playerID = PlayerType.PLAYER1;
                 playersInGame.add(playerID);
                 gameSpace.put("players", playersInGame);
-            } else {
-                System.out.println("Connecting to server..." + uri);
-                gameSpace = new RemoteSpace(uri);
-
-                System.out.println("Connected to game space as client");
-
-                gameSpace.put("newPlayer", PlayerType.PLAYER1);
-                Object [] getPlayers = gameSpace.get(new ActualField("newPlayer"), new FormalField(String.class), new ActualField("answer"));
-                switch (getPlayers[1].toString()){
-                    case "PLAYER2":
-                        playerID = PlayerType.PLAYER2;
-                        System.out.println("Player " + getPlayers[1] + " joined the game");
-                        break;
-                    case "PLAYER3":
-                        playerID = PlayerType.PLAYER3;
-                        System.out.println("Player " + getPlayers[1] + " joined the game");
-                        break;
-                    case "PLAYER4":
-                        playerID = PlayerType.PLAYER4;
-                        System.out.println("Player " + getPlayers[1] + " joined the game");
-                        break;
-                    default:
-                        errorMsg = "No available player";
-                        return;
+                
+            } catch (InterruptedException e) {
+                errorMsg = "Could not connect to game space";
+                System.out.println(errorMsg);
+                return;
+            }
+            new Thread(() -> {
+                try {
+                    while (true) {
+                        Object[] response = gameSpace.get(new ActualField("leavingGame"), new FormalField(PlayerType.class));
+                        if (response != null) {
+                            PlayerType player = (PlayerType) response[1];
+                            System.out.println("Player " + player + " left the game");
+                            playersInGame.remove(player);
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
+            }).start();
 
-
-//                Object [] getPlayers = gameSpace.get(new ActualField("players"),new FormalField(ArrayList.class));
-//                ArrayList<Object> players = (ArrayList<Object>) getPlayers[1];
-//                getAvailablePlayer(players);
-//                if (playerID == null){
-//                    System.out.println("No available player");
-//                    return;
-//                }
-//
-//                gameSpace.put("newPlayer", playerID);
-
-
+        } else {
+            System.out.println("Connecting to server..." + uri);
+            try {
+                gameSpace = new RemoteSpace(uri);
+            } catch (IOException e) {
+                errorMsg = "Could not connect to repository";
+                System.out.println(errorMsg);
+                return;
             }
 
-        } catch (InterruptedException | IOException ex) {
-            System.out.println("no respository set up");
-            return;
+            System.out.println("Connected to game space as client");
+
+            Object[] getPlayers = new Object[0];
+            try {
+                gameSpace.put("newPlayer", PlayerType.PLAYER1);
+                getPlayers = gameSpace.get(new ActualField("newPlayer"), new FormalField(String.class), new ActualField("answer"));
+            } catch (InterruptedException e) {
+                errorMsg = "Could not connect to game space";
+                System.out.println(errorMsg);
+                getGameController().gotoMainMenu();
+            }
+            switch (getPlayers[1].toString()) {
+                case "PLAYER2":
+                    playerID = PlayerType.PLAYER2;
+                    System.out.println("Player " + getPlayers[1] + " joined the game");
+                    break;
+                case "PLAYER3":
+                    playerID = PlayerType.PLAYER3;
+                    System.out.println("Player " + getPlayers[1] + " joined the game");
+                    break;
+                case "PLAYER4":
+                    playerID = PlayerType.PLAYER4;
+                    System.out.println("Player " + getPlayers[1] + " joined the game");
+                    break;
+                default:
+                    errorMsg = "No available player";
+                    return;
+            }
+
         }
 
         getGameWorld().addEntityFactory(new CustomEntityFactory());
-
-        spawnEnemies(1,10);
 
 
     }
 
     private static void spawnEnemies(double delay, int limit) {
-        if (playerID == PlayerType.PLAYER1){
-            run(()-> {
+        run(()-> {
+            if (playerID == PlayerType.PLAYER1) {
                 spawn("EnemyMK1", 0,390);
                 Tuple t = new Tuple("spawn", "EnemyMK1", new Point2D(0, 390));
                 try {
                     sendToAllPlayersOnline(t);
                 } catch (InterruptedException e) {
                 }
+            }
 
-                return null;
-            }, Duration.seconds(delay), limit);
-
-
-        }
+            return null;
+        }, Duration.seconds(delay), limit);
     }
 
     private PlayerType getAvailablePlayer() {
@@ -262,9 +273,8 @@ public class App extends GameApplication {
     protected void initUI() {
         loadScene("Level1Nice.fxml");
 
-        Button startRound = null;
         if (playerID == PlayerType.PLAYER1) {
-            startRound = new Button("Start Next Round");
+            Button startRound = new Button("Start Next Round");
 
             startRound.setTranslateY(100);
             startRound.setOnAction(e -> {
@@ -278,7 +288,8 @@ public class App extends GameApplication {
             try {
                 gameOver();
             } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
+                System.out.println("Not connected to gamespace");
+                getGameController().gotoGameMenu();
             }
         });
 
@@ -292,7 +303,6 @@ public class App extends GameApplication {
 
         // 1. get input service
         Input input = FXGL.getInput();
-
 
         input.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton() == MouseButton.PRIMARY) {
@@ -344,17 +354,11 @@ public class App extends GameApplication {
                                     } catch (InterruptedException ex) {
                                         throw new RuntimeException(ex);
                                     }
-                                    System.out.println("GOOD TO GO");
-                                    //show coordinates for imageview and x and y
-                                    System.out.println("imageView.getX(), " + imageView.getLayoutX() + "");
-                                    System.out.println("imageView.getY(), " + imageView.getLayoutY() + "");
-                                    System.out.println("y, " + y + "");
-                                    System.out.println("x, " + x + "");
                                     draggedEntity.removeFromWorld();
 
                                     if (playerID == PlayerType.PLAYER1){
                                         try {
-                                            nextEntity = draggedEntity;
+                                            spawnPoint = draggedEntity.getCenter();
                                             sendToAllPlayersOnline(new Tuple("spawn",tier, draggedEntity.getCenter()));
                                         } catch (InterruptedException ex) {
                                             throw new RuntimeException(ex);
@@ -363,6 +367,7 @@ public class App extends GameApplication {
                                         timerExpired = false;
                                         getGameTimer().runOnceAfter(() -> {
                                             timerExpired = true;
+                                            System.out.println(timerExpired);
                                         }, Duration.seconds(1));
 
                                     }else {
@@ -374,7 +379,6 @@ public class App extends GameApplication {
                                     }
                                     isDragging = false;
                                 }else {
-                                    System.out.println("NOT GOOD TO GO");
                                     draggedEntity.removeFromWorld();
                                     isDragging = false;
                                     break;
@@ -383,7 +387,6 @@ public class App extends GameApplication {
 
                         }
                     }
-
 
                 }
             }
@@ -402,7 +405,8 @@ public class App extends GameApplication {
             try {
                 gameOver();
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                System.out.println("Not connected to gamespace");
+                getGameController().gotoGameMenu();
             }
             return;
         }
@@ -437,13 +441,13 @@ public class App extends GameApplication {
                         gameSpace.put("newPlayer", "no space", "answer");
                     }
                 }
-
-                response = gameSpace.getp(new ActualField("leavingGame"), new FormalField(PlayerType.class));
-                if (response != null) {
-                    PlayerType player = (PlayerType) response[1];
-                    System.out.println("Player " + player + " left the game");
-                    playersInGame.remove(player);
-                }
+//
+//                response = gameSpace.getp(new ActualField("leavingGame"), new FormalField(PlayerType.class));
+//                if (response != null) {
+//                    PlayerType player = (PlayerType) response[1];
+//                    System.out.println("Player " + player + " left the game");
+//                    playersInGame.remove(player);
+//                }
 
                 if (!clientsDoneSpawning){
                     boolean allPlayersDone = false;
@@ -452,7 +456,7 @@ public class App extends GameApplication {
                         clientsDoneSpawning = true;
                         timerExpired = false;
                         System.out.println("gg");
-                        spawn(tier, nextEntity.getCenter());
+                        spawn(tier, spawnPoint);
                     } else {
                         allPlayersDone = true;
                         for (PlayerType player : playersInGame) {
@@ -464,16 +468,26 @@ public class App extends GameApplication {
                                     clientsDoneSpawning = false;
                                     allPlayersDone = false;
                                     break;
+                                }else if (response == null){
+                                    allPlayersDone = false;
+                                    System.out.println("Player " + player + " has not responded yet");
+                                    break;
                                 }else {
-                                    gameSpace.get(new ActualField("Done"), new ActualField(player));
+                                    System.out.println("Player " + player + " responded");
                                 }
                             }
                         }
                     }
                     if(allPlayersDone){
+                        System.out.println("All players done");
+                        for (PlayerType player : playersInGame) {
+                            if (player != playerID) {
+                                gameSpace.get(new ActualField("Done"), new ActualField(player));
+                            }
+                        }
                         clientsDoneSpawning = true;
                         timerExpired = false;
-                        spawn(tier, nextEntity.getCenter());
+                        spawn(tier, spawnPoint);
                     }
                 }
 
@@ -512,6 +526,7 @@ public class App extends GameApplication {
                                         }else {
                                             spawn("TurretMK1", entityPos);
                                         }
+                                        System.out.println("repsoning");
                                         gameSpace.put("Done", playerID);
                                         break;
 
@@ -531,13 +546,15 @@ public class App extends GameApplication {
                                         bullet.addComponent(new ProjectileComponent(direction, 200));
                                         break;
                                 }
+                                break;
+                            case "rotate":
+                                break;
                         }
                     }else {
 
                         try {
-                            nextEntity = spawn(t.getElementAt(1).toString(), (Point2D) t.getElementAt(2));
+                            spawnPoint = (Point2D) t.getElementAt(2);
                             tier = t.getElementAt(1).toString();
-                            nextEntity.removeFromWorld();
                             sendToAllPlayersOnline(t);
                         } catch (InterruptedException ex) {
                             throw new RuntimeException(ex);
@@ -580,23 +597,11 @@ public class App extends GameApplication {
             }
 
         } catch (InterruptedException e) {
-            getGameController().gotoMainMenu();
+            getGameController().gotoGameMenu();
         }
     }
 
 
-
-        private void sendToAllPlayers(Tuple fields, PlayerType currentPlayer) throws InterruptedException {
-
-        System.out.println("Sending to all other players... " + tier);
-        for (PlayerType player : PlayerType.values()) {
-            if (player != currentPlayer) {
-                // Assuming pSpace supports putting multiple values at once
-                gameSpace.put(player, fields);
-            }
-        }
-
-    }
 
     public static void sendToAllPlayersOnline(Tuple fields) throws InterruptedException {
         //get all players from gameSpace
