@@ -35,6 +35,7 @@ import org.jspace.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
 
@@ -69,15 +70,18 @@ public class App extends GameApplication {
     private boolean isDragging = false;
     private Entity draggedEntity = null;
     private String tier = "";
+    private Point2D spawnPoint = new Point2D(0, 0);
     private static int playerID = -1;
+    private static int serverID = 0;
     private static int playerCount = 0;
     private ArrayList<Integer> usedPlayerIDs = new ArrayList<>();
-    private String GameRoom = "";
+    private String gameRoom = "";
 
     // pSpaces
     private static String uri;
-    private static SpaceRepository repository;
     private static Space gameSpace = null;
+    private static boolean confirmedFromAllClients = false;
+    private ArrayList<Integer> confirmedClients = new ArrayList<>();
     public Parent root;
 
     @Override
@@ -102,9 +106,9 @@ public class App extends GameApplication {
     }
     private int gold = 0;
 
-    private void loadScene(String fxmlFileName) {
+    private void loadScene() {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/" + fxmlFileName));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/" + "Level1Nice.fxml"));
             root = fxmlLoader.load();
             FXGL.getGameScene().clearUINodes();
             //FXGL.getGameScene().addUINode(root);
@@ -123,11 +127,11 @@ public class App extends GameApplication {
             if (playerID == 0) { // If this is the server
                 uri = "tcp://localhost:31415/?keep";
                 gameSpace = new SequentialSpace();
-                repository = new SpaceRepository();
-                GameRoom = getRandomGameRoom();
-                repository.add(GameRoom, gameSpace);
+                SpaceRepository repository = new SpaceRepository();
+                gameRoom = getRandomGameRoom();
+                repository.add(gameRoom, gameSpace);
                 repository.addGate(uri);
-                System.out.println("Server: Created game room: " + GameRoom);
+                System.out.println("Server: Created game room: " + gameRoom);
                 gameSpace.put("gold", 1000);
                 gameSpace.put("lives", 10);
                 gold = 1000;
@@ -135,7 +139,7 @@ public class App extends GameApplication {
                 usedPlayerIDs.add(playerID);
             } else {
                 gameSpace = new RemoteSpace(uri);
-                System.out.println("Client: Joined game room: " + GameRoom);
+                System.out.println("Client: Joined game room: " + gameRoom);
                 gameSpace.put("newPlayer");
 
                 // Wait for playerID ("newPlayer" is the key and is now last in the tuple)
@@ -147,14 +151,6 @@ public class App extends GameApplication {
                     gameOver();
                     return;
                 }
-
-//                Object[] getPlayers = gameSpace.get(new ActualField("players"), new FormalField(ArrayList.class));
-//                ArrayList<Object> players = (ArrayList<Object>) getPlayers[1];
-//                getAvailablePlayer(players);
-//                if (playerID == null) {
-//                    System.out.println("No available player");
-//                    return;
-//                }
             }
         } catch (IOException | InterruptedException e) {
             FXGL.getGameController().gotoMainMenu();
@@ -183,16 +179,44 @@ public class App extends GameApplication {
                 // TODO: Implement handling receiving spawn requests from a client and distributing it to all other clients.
                 // TODO: Wait for all clients to reply with a spawn request before spawning the entity.
 
-            }
+                response = gameSpace.getp(new ActualField(playerID), new ActualField("Spawn"), new FormalField(String.class), new FormalField(Point2D.class));
+                if(response != null) { // Client wants to spawn something (serverID, Tuple("Spawn", Tier, Point2D))
+                    confirmedFromAllClients = false;
+                    confirmedClients.clear();
+                    // print tuple
+                    System.out.println("Tuple: " + Arrays.toString(response));
+                    for (int ID : usedPlayerIDs) {
+                        if (ID != playerID) { // Don't send to self
+                            // Sends specified tuple to all players
+                            tier = response[2].toString();
+                            spawnPoint = (Point2D) response[3];
+                            gameSpace.put("Spawn", tier, spawnPoint, ID);
+                        }
+                    }
+                }
 
-            if(gameSpace.queryp(new ActualField("Spawn"), new FormalField(Tuple.class)) != null) {
-                response = gameSpace.get(new ActualField(playerID),  new FormalField(Tuple.class));
-                Tuple t = (Tuple) response[1];
-                switch (t.getElementAt(0).toString()){
-                    case "Spawn":
-                        String entityType = t.getElementAt(1).toString();
-                        Point2D entityPos = (Point2D) t.getElementAt(2);
-
+                if(!confirmedFromAllClients) { // If not all clients have confirmed
+                    response = gameSpace.getp(new ActualField(playerID), new ActualField("ConfirmedSpawn"), new FormalField(Integer.class));
+                    if(response != null) { // Client has confirmed
+                        if(response[1].toString().equals("ConfirmedSpawn")) { // If the tuple is a spawn confirmation
+                            confirmedClients.add((int) response[2]);
+                            System.out.println(response[2] + " has confirmed");
+                            if(confirmedClients.size() == playerCount) { // If all clients have confirmed
+                                confirmedFromAllClients = true;
+                                // Spawn entity
+                                spawn(tier, spawnPoint);
+                            }
+                        }
+                    }
+                }
+            } else { // If this is a client
+                response = gameSpace.getp(new ActualField("Spawn"), new FormalField(String.class), new FormalField(Point2D.class), new ActualField(playerID));
+                if(response != null) { // Server wants to spawn something ("Spawn", Tier, Point2D, ClientID)
+                    // Spawn entity
+                    spawn(response[1].toString(), (Point2D) response[2]);
+                    // Reply with confirmation
+                    System.out.println("Client" + playerID + ": sending confirmation to server...");
+                    gameSpace.put(serverID, "ConfirmedSpawn", playerID);
                 }
             }
 
@@ -244,7 +268,7 @@ public class App extends GameApplication {
 
     @Override
     protected void initUI() {
-        loadScene("Level1Nice.fxml");
+        loadScene();
 
         Button spawnEnemy = new Button("Next Wave");
 
@@ -262,7 +286,7 @@ public class App extends GameApplication {
             spawn("EnemyMK1", 0,390);
             Tuple t = new Tuple("Spawn", "EnemyMK1", new Point2D(0, 390));
             try {
-                sendToOtherClients(t);
+                sendToAllClients(t);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -278,27 +302,26 @@ public class App extends GameApplication {
         Input input = FXGL.getInput();
 
 
-        input.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (e.getButton() == MouseButton.PRIMARY) {
+        input.addEventFilter(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
+            if (mouseEvent.getButton() == MouseButton.PRIMARY) {
                 Object[] gold;
                 int goldAmount;
 
-                if (!isDragging) { // If a turret is not in the process of being placed
-                    if (e.getTarget().getClass() == Button.class) {
-                        Button btn = (Button) e.getTarget();
+                if (!isDragging) { // Spawn turret sprite which follows the mouse
+                    if (mouseEvent.getTarget().getClass() == Button.class) {
+                        Button btn = (Button) mouseEvent.getTarget();
                         if (Objects.equals(btn.getId(), "mk1_btn")) { // TurretMK1
                             tier = "TurretMK1static";
                             draggedEntity = spawn("TurretMK1", FXGL.getInput().getMousePositionWorld());
-                            isDragging = true;
                         } else if (Objects.equals(btn.getId(), "mk2_btn")) { // TurretMK2
                             tier = "TurretMK2static";
                             draggedEntity = spawn("TurretMK2", FXGL.getInput().getMousePositionWorld());
-                            isDragging = true;
                         }
+                        isDragging = true;
                     }
                 }else { // Make the turret follow the mouse
-                    double x = e.getX();
-                    double y = e.getY();
+                    double x = mouseEvent.getX();
+                    double y = mouseEvent.getY();
 
                     GridPane images = (GridPane) root.getChildrenUnmodifiable().get(0);
                     for( Node child: images.getChildrenUnmodifiable()) {
@@ -320,19 +343,19 @@ public class App extends GameApplication {
                                         }else {
                                             gameSpace.put("gold", goldAmount - 100);
                                         }
-                                    } catch (InterruptedException ex) {
-                                        throw new RuntimeException(ex);
+
+                                        System.out.println("GOOD TO GO");
+                                        //show coordinates for imageview and x and y
+                                        System.out.println("imageView.getX(), " + imageView.getLayoutX() + "");
+                                        System.out.println("imageView.getY(), " + imageView.getLayoutY() + "");
+                                        System.out.println("y, " + y + "");
+                                        System.out.println("x, " + x + "");
+                                        draggedEntity.removeFromWorld();
+                                        isDragging = false;
+                                        gameSpace.put(serverID, "Spawn", tier, new Point2D(x,y));
+                                    } catch (InterruptedException e) {
+                                        throw new RuntimeException(e);
                                     }
-                                    System.out.println("GOOD TO GO");
-                                    //show coordinates for imageview and x and y
-                                    System.out.println("imageView.getX(), " + imageView.getLayoutX() + "");
-                                    System.out.println("imageView.getY(), " + imageView.getLayoutY() + "");
-                                    System.out.println("y, " + y + "");
-                                    System.out.println("x, " + x + "");
-                                    draggedEntity.removeFromWorld();
-                                    spawn(tier, e.getX(), e.getY());
-                                    isDragging = false;
-                                    sendToServer(new Tuple("Spawn", tier, new Point2D(e.getX(), e.getY())));
                                 }else {
                                     System.out.println("NOT GOOD TO GO");
                                     draggedEntity.removeFromWorld();
@@ -348,20 +371,20 @@ public class App extends GameApplication {
     }
 
     private void sendToServer(Tuple t) {
-        try {
-            gameSpace.put(playerID, t);
+        try { // (My playerID, Tuple("Spawn", Tier, Point2D))
+            System.out.println("Client" + playerID + ": sending to server... :" + t);
+            gameSpace.put(serverID, t);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void sendToOtherClients(Tuple fields) throws InterruptedException {
-        System.out.println("Sending to all other players... " + tier);
-        for (int IDs : usedPlayerIDs) {
-            if (IDs != playerID) { // Don't send to self
-                // Sends specified tuple to all players
-                gameSpace.put(IDs, fields);
-            }
+    private void sendToAllClients(Tuple t) throws InterruptedException {
+        if(playerID != 0) return; // Only the server can send to all clients
+        for (int ID : usedPlayerIDs) {
+            System.out.println("Sending to Client" + ID + ": " + t);
+            // Sends specified tuple to all players
+            gameSpace.put(ID, t);
         }
     }
 
@@ -421,8 +444,8 @@ public class App extends GameApplication {
 
     public void joinGameButton(ActionEvent actionEvent) {
         System.out.println("Joining game...");
-        String room = joincodefield.getText();
-        uri = "tcp://localhost:31415/" + room + "?keep";
+        gameRoom = joincodefield.getText();
+        uri = "tcp://localhost:31415/" + gameRoom + "?keep";
         System.out.println("URI: " + uri);
         gameSpace = null;
         FXGL.getGameController().startNewGame();;
