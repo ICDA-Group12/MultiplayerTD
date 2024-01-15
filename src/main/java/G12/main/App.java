@@ -18,6 +18,7 @@ import com.almasb.fxgl.app.scene.SceneFactory;
 import com.almasb.fxgl.audio.Audio;
 import com.almasb.fxgl.core.EngineService;
 import com.almasb.fxgl.dsl.FXGL;
+import com.almasb.fxgl.dsl.components.HealthIntComponent;
 import com.almasb.fxgl.dsl.components.ProjectileComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.Spawns;
@@ -33,17 +34,17 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.jetbrains.annotations.NotNull;
 import org.jspace.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Objects;
 
-import static com.almasb.fxgl.dsl.FXGL.getPhysicsWorld;
-import static com.almasb.fxgl.dsl.FXGL.spawn;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
+import static com.almasb.fxgl.dsl.FXGL.*;
 
 
 /**
@@ -67,7 +68,11 @@ public class App extends GameApplication {
     public TextField joincodefield;
     public TextField sessionCode;
 
+    private int enemisSpawned = 10;
+    private double spawnrate = 0.5;
+
     private boolean timerExpired = false;
+    private boolean canSpawnNewTower = true;
     private boolean clientsDoneSpawning = true;
     private boolean isDragging = false;
     private Entity draggedEntity = null;
@@ -110,18 +115,9 @@ public class App extends GameApplication {
     }
 
     public static class CustomService extends EngineService {
-        @Override
-        public void onInit() {
-            System.out.println("onInit()");
-        }
 
         @Override
         public void onExit() {
-//            try {
-//                gameOver();
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
             if (playerID != PlayerType.PLAYER1 && playerID != null) {
                 try {
                     gameSpace.put("leavingGame", playerID);
@@ -165,8 +161,6 @@ public class App extends GameApplication {
             try {
                 gameSpace.put("gold", 1000);
                 gameSpace.put("lives", 10);
-                gold = 1000;
-                System.out.println("Gold: " + gold);
                 playersInGame = new ArrayList<>();
                 playerID = PlayerType.PLAYER1;
                 playersInGame.add(playerID);
@@ -192,6 +186,7 @@ public class App extends GameApplication {
                 }
             }).start();
 
+
         } else {
             System.out.println("Connecting to server..." + uri);
             try {
@@ -207,12 +202,15 @@ public class App extends GameApplication {
             Object[] getResponse = new Object[0];
             try {
                 gameSpace.put("newPlayer", PlayerType.PLAYER1);
+                System.out.println("Waiting for response");
                 getResponse = gameSpace.get(new ActualField("newPlayer"), new FormalField(String.class), new ActualField("answer"));
+                System.out.println("Response received");
             } catch (InterruptedException e) {
                 errorMsg = "Could not connect to game space";
                 System.out.println(errorMsg);
                 getGameController().gotoMainMenu();
             }
+            System.out.println(getResponse[1].toString());
             switch (getResponse[1].toString()) {
                 case "PLAYER2":
                     playerID = PlayerType.PLAYER2;
@@ -248,8 +246,6 @@ public class App extends GameApplication {
                 } catch (InterruptedException e) {
                 }
             }
-
-            return null;
         }, Duration.seconds(delay), limit);
     }
 
@@ -278,7 +274,12 @@ public class App extends GameApplication {
 
             startRound.setTranslateY(100);
             startRound.setOnAction(e -> {
-                spawnEnemies(0.5, 10);
+                spawnEnemies(spawnrate, enemisSpawned);
+                enemisSpawned += 5;
+                spawnrate -= 0.1;
+                if (spawnrate <= 0.1) {
+                    spawnrate = 0.1;
+                }
             });
             getGameScene().addUINode(startRound);
         }
@@ -292,8 +293,9 @@ public class App extends GameApplication {
                 getGameController().gotoGameMenu();
             }
         });
-
-        getGameScene().addUINode(quitGame);
+        Text goldAmount = addVarText("gold", 500, 20);
+        Text livesAmount = addVarText("lives", 450, 20);
+        getGameScene().addUINodes(quitGame);
 
     }
 
@@ -305,7 +307,7 @@ public class App extends GameApplication {
         Input input = FXGL.getInput();
 
         input.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (e.getButton() == MouseButton.PRIMARY) {
+            if (e.getButton() == MouseButton.PRIMARY && canSpawnNewTower) {
 //                System.out.println(e.getTarget());
                 Object[] gold;
                 int goldAmount;
@@ -372,6 +374,7 @@ public class App extends GameApplication {
                                     }else {
                                         try {
                                             gameSpace.put(PlayerType.PLAYER1, new Tuple("spawn",tier, draggedEntity.getCenter()));
+                                            canSpawnNewTower = false;
                                         } catch (InterruptedException ex) {
                                             throw new RuntimeException(ex);
                                         }
@@ -414,7 +417,7 @@ public class App extends GameApplication {
             if (playerID == PlayerType.PLAYER1) {
                 response = gameSpace.getp(new ActualField("newPlayer"), new ActualField(playerID));
                 if (response != null) {
-                    if (playersInGame.size() >= 4) {
+                    if (playersInGame.size() < 4) {
                         PlayerType playerToSendTo = getAvailablePlayer();
                         System.out.println("New player joined");
                         gameSpace.put("newPlayer", playerToSendTo.toString(), "answer");
@@ -493,6 +496,7 @@ public class App extends GameApplication {
                 Object[] lives = gameSpace.queryp(new ActualField("lives"), new FormalField(Integer.class));
                 if (lives != null) {
                     int tempLives = (int) lives[1];
+                    set("lives", tempLives);
                     if (tempLives <= 0) {
                         System.out.println("Game Over");
                         gameOver();
@@ -527,6 +531,7 @@ public class App extends GameApplication {
                                         }
                                         System.out.println("repsoning");
                                         gameSpace.put("Done", playerID);
+                                        canSpawnNewTower = true;
                                         break;
 
                                     case "TurretMK2static":
@@ -536,6 +541,7 @@ public class App extends GameApplication {
                                             spawn("TurretMK2", entityPos);
                                         }
                                         gameSpace.put("Done", playerID);
+                                        canSpawnNewTower = true;
                                         break;
 
                                     case "BulletMK1":
@@ -572,11 +578,11 @@ public class App extends GameApplication {
                 response = gameSpace.queryp(new ActualField("gold"), new FormalField(Integer.class));
                 if (response != null){
                     int tempGold = (int) response[1];
-                    if (tempGold != gold){
-                        gold = tempGold;
+                    if (tempGold != geti("gold")){
+                        set("gold", tempGold);
                         System.out.println("Gold: " + gold);
                     }
-                    if (gold <= 0){
+                    if (geti("gold") <= 0){
                         gameOver();
                     }
                 }
@@ -616,6 +622,12 @@ public class App extends GameApplication {
     }
 
     @Override
+    protected void initGameVars(Map<String, Object> vars) {
+        vars.put("gold", 1000);
+        vars.put("lives", 10);
+    }
+
+    @Override
     protected void initPhysics() {
         // the order of entities is determined by
         // the order of their types passed into this method
@@ -628,7 +640,25 @@ public class App extends GameApplication {
             protected void onCollisionBegin(Entity Enemy, Entity Bullet) {
                 // Play sound
                 // hitSound.play();
-                Enemy.removeFromWorld();
+                int health = Enemy.getComponent(HealthIntComponent.class).getValue();
+                health -= 1;
+                if (health <= 0) {
+                    Enemy.removeFromWorld();
+                    try {
+                        Object [] res = gameSpace.get(new ActualField("gold"), new FormalField(Integer.class));
+                        if (res != null){
+                            int gold = (int) res[1] + 10;
+                            set("gold", gold);
+                            gameSpace.put("gold", geti("gold"));
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    // enemies.remove(Enemy);
+                }
+                else {
+                    Enemy.getComponent(HealthIntComponent.class).setValue(health);
+                }
                 // enemies.remove(Enemy);
 
 

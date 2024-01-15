@@ -6,6 +6,7 @@ import G12.main.entities.entityFunctions.ShootingComponent;
 import G12.main.entities.entityFunctions.StoreEntityParentComponent;
 import com.almasb.fxgl.dsl.EntityBuilder;
 import com.almasb.fxgl.dsl.FXGL;
+import com.almasb.fxgl.dsl.components.HealthIntComponent;
 import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
 import com.almasb.fxgl.dsl.components.ProjectileComponent;
 import com.almasb.fxgl.entity.Entity;
@@ -92,6 +93,7 @@ public class CustomEntityFactory implements EntityFactory {
                 .at(data.getX() - view.getWidth() / 2, data.getY() - view.getHeight() / 2)
                 .viewWithBBox(new ImageView(view))
                 .with(new OffscreenCleanComponent())
+                .with(new HealthIntComponent(3))
                 .with(physics)
                 .with(new MoveEnemyComponent())
                 .collidable()
