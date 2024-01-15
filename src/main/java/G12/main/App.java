@@ -330,7 +330,7 @@ public class App extends GameApplication {
             try {
                 gameOver();
             } catch (InterruptedException ex) {
-                getGameController().gotoGameMenu();
+                getGameController().gotoMainMenu();
             }
         });
         Text goldAmount = addVarText("gold", 500, 20);
@@ -450,12 +450,12 @@ public class App extends GameApplication {
     protected void onUpdate(double tpf) {
         Object [] response = null;
 
-        if (playerID == null){
+        if (playerID == null || gameSpace == null){
             try {
                 gameOver();
             } catch (InterruptedException e) {
                 System.out.println("Not connected to gamespace");
-                getGameController().gotoGameMenu();
+                getGameController().gotoMainMenu();
             }
             return;
         }
@@ -640,10 +640,9 @@ public class App extends GameApplication {
                 int tempGold = (int) response[1];
                 if (tempGold != geti("gold")){
                     set("gold", tempGold);
-                    System.out.println("Gold: " + gold);
                 }
                 if (geti("gold") <= 0){
-                    gameOver();
+                    //gameOver();
                 }
             }
         }
@@ -663,7 +662,7 @@ public class App extends GameApplication {
         getGameWorld().getEntitiesByType(EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(this::updateSpecificTurretTarget);
 
         } catch (InterruptedException e) {
-            getGameController().gotoGameMenu();
+            getGameController().gotoMainMenu();
         }
     }
 
@@ -759,7 +758,7 @@ public class App extends GameApplication {
 
     private static void gameOver() throws InterruptedException {
         System.out.println(errorMsg);
-        if (playerID != null){
+        if (playerID != null && gameSpace != null) {
 
             if (playerID != PlayerType.PLAYER1) {
                 gameSpace.put("leavingGame", playerID);
@@ -767,6 +766,7 @@ public class App extends GameApplication {
 
             if (playerID == PlayerType.PLAYER1){
                 repository.remove(spaceName);
+                System.out.println("Closing repository, and remove space: " + spaceName);
                 gameSpace = null;
                 repository.closeGate(uri);
                 repository.shutDown();
