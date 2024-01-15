@@ -8,9 +8,12 @@ import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
 import javafx.geometry.Point2D;
 import javafx.util.Duration;
+import org.jspace.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static G12.main.App.*;
 
 /**
  * Allows an entity to spawn bullets.
@@ -24,8 +27,8 @@ public class ShootingComponent extends Component{
 
     protected double speed;
     protected Entity target;
+    protected Point2D direction;
     protected BulletType bulletType;
-    List<Entity> bullets = new ArrayList<>();
     protected String bulletSprite;
 
     public ShootingComponent(double delay, double speed, BulletType bulletType) {
@@ -41,7 +44,13 @@ public class ShootingComponent extends Component{
                 break;
         }
 
-        FXGL.getGameTimer().runAtInterval(this::shoot, Duration.seconds(delay));
+       FXGL.getGameTimer().runAtInterval(() -> {
+           try {
+                shoot();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+           }
+       }, Duration.seconds(delay));
     }
 
     public void updateTarget(Entity target) {
@@ -52,15 +61,25 @@ public class ShootingComponent extends Component{
         return target;
     }
 
-    public void shoot() {
+    public void setDirection(Point2D direction) {
+        this.direction = direction;
+    }
+
+    public Point2D getDirection() {
+        return direction;
+    }
+
+    public void shoot() throws InterruptedException {
 
         if(target == null) return;
 
         Point2D fromTarget = entity.getCenter();
         Point2D toTarget = target.getCenter();
         Point2D direction = toTarget.subtract(fromTarget).normalize();
+        Tuple bulletTuple = new Tuple("spawn", "BulletMK1", entity.getCenter(), direction);
+        sendToAllPlayersOnline(bulletTuple);
 
-        bullets.add(FXGL.entityBuilder()
+        FXGL.entityBuilder()
                 .type(EntityType.BULLET)
                 .at(entity.getCenter())
                 .viewWithBBox(bulletSprite)
@@ -68,7 +87,7 @@ public class ShootingComponent extends Component{
                 .with(new OffscreenCleanComponent())
                 .with(new StoreEntityParentComponent(entity))
                 .collidable()
-                .buildAndAttach());
+                .buildAndAttach();
 
     }
 }

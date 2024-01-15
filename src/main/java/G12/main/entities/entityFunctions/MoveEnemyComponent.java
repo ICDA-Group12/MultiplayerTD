@@ -1,10 +1,13 @@
 package G12.main.entities.entityFunctions;
 
+import G12.main.entities.PlayerType;
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.physics.PhysicsComponent;
 import javafx.geometry.Point2D;
+import org.jspace.ActualField;
+import org.jspace.FormalField;
 
-import static G12.main.App.pathCoordinates;
+import static G12.main.App.*;
 
 public class MoveEnemyComponent extends Component {
 
@@ -12,10 +15,14 @@ public class MoveEnemyComponent extends Component {
 
     @Override
     public void onUpdate(double tpf) {
-        move();
+        try {
+            move();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void move(){
+    public void move() throws InterruptedException {
         Point2D center = entity.getCenter();
         if (currentPathIndex < pathCoordinates.length - 2){
             //System.out.println(currentPathIndex);
@@ -42,7 +49,12 @@ public class MoveEnemyComponent extends Component {
         }else{
             if (center.getX() >= pathCoordinates[currentPathIndex + 1].getX()){
                 currentPathIndex = 0;
+                if (playerID == PlayerType.PLAYER1) {
+                    Object[] lives = gameSpace.get(new ActualField("lives"), new FormalField(Integer.class));
+                    gameSpace.put("lives", (int) lives[1] - 1);
+                }
                 entity.removeFromWorld();
+
             }
 
         }

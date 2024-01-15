@@ -16,12 +16,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import org.jetbrains.annotations.NotNull;
 
+import static com.almasb.fxgl.dsl.FXGL.getGameScene;
 import static com.almasb.fxgl.dsl.FXGL.getUIFactoryService;
 import static javafx.beans.binding.Bindings.when;
 
 public class MyMenu extends FXGLMenu {
     public MyMenu(@NotNull MenuType type) {
         super(type);
+
         getContentRoot().getChildren().add(loadScene("MainMenu.fxml"));
 
     }

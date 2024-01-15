@@ -60,7 +60,7 @@
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>G12.main.App</mainClass>
+                            <mainClass>G12.main.ChatApp</mainClass>
                         </configuration>
                     </execution>
                 </executions>
