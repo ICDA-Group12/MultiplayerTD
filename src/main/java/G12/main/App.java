@@ -559,106 +559,108 @@ public class App extends GameApplication {
                     Tuple t = (Tuple) response[1];
 
 
-                    if (playerID != PlayerType.PLAYER1) {
-                        switch (t.getElementAt(0).toString()){
-                            case "spawn":
-                                String entityType = t.getElementAt(1).toString();
-                                Point2D entityPos = (Point2D) t.getElementAt(2);
+                if (playerID != PlayerType.PLAYER1) {
+                    switch (t.getElementAt(0).toString()){
+                        case "spawn":
+                            String entityType = t.getElementAt(1).toString();
+                            Point2D entityPos = (Point2D) t.getElementAt(2);
 
-                                switch (entityType) {
-                                    case "EnemyMK1":
-                                        spawn(entityType, entityPos.getX(), entityPos.getY());
-                                        break;
+                            switch (entityType) {
+                                case "EnemyMK1":
+                                    spawn(entityType, entityPos.getX(), entityPos.getY());
+                                    break;
 
-                                    case "TurretMK1static":
-                                        if (playerID == PlayerType.PLAYER1){
-                                            spawn("TurretMK1static", entityPos);
-                                        }else {
-                                            spawn("TurretMK1", entityPos);
-                                        }
-                                        System.out.println("repsoning");
-                                        gameSpace.put("Done", playerID);
-                                        canSpawnNewTower = true;
-                                        break;
+                                case "TurretMK1static":
+//                                    if (playerID == PlayerType.PLAYER1){
+//                                        spawn("TurretMK1static", entityPos);
+//                                    }else {
+//                                        spawn("TurretMK1", entityPos);
+//                                    }
+                                    spawn("TurretMK1static", entityPos);
+                                    System.out.println("repsoning");
+                                    gameSpace.put("Done", playerID);
+                                    canSpawnNewTower = true;
+                                    break;
 
-                                    case "TurretMK2static":
-                                        if (playerID == PlayerType.PLAYER1){
-                                            spawn("TurretMK2static", entityPos);
-                                        }else {
-                                            spawn("TurretMK2", entityPos);
-                                        }
-                                        gameSpace.put("Done", playerID);
-                                        canSpawnNewTower = true;
-                                        break;
+                                case "TurretMK2static":
+//                                    if (playerID == PlayerType.PLAYER1){
+//                                        spawn("TurretMK2static", entityPos);
+//                                    }else {
+//                                        spawn("TurretMK2", entityPos);
+//                                    }
+                                    spawn("TurretMK2static", entityPos);
+                                    gameSpace.put("Done", playerID);
+                                    canSpawnNewTower = true;
+                                    break;
 
-                                    case "BulletMK1":
-                                        System.out.println("BulletMK1");
-                                        Point2D direction = (Point2D) t.getElementAt(3);
-                                        bullet = spawn(entityType, entityPos);
-                                        bullet.addComponent(new ProjectileComponent(direction, 200));
-                                        break;
-                                }
-                                break;
-                            case "rotate":
-                                break;
-                            case "chat":
-                                msg = t.getElementAt(1).toString();
-                                showMessage((PlayerType) t.getElementAt(2));
-                                break;
-                        }
-                    }else {
-                        switch (t.getElementAt(0).toString()) {
-                            case "spawn":
-                                try {
-                                    spawnPoint = (Point2D) t.getElementAt(2);
-                                    tier = t.getElementAt(1).toString();
-                                    sendToAllPlayersOnline(t);
-                                } catch (InterruptedException ex) {
-                                    throw new RuntimeException(ex);
-                                }
-                                clientsDoneSpawning = false;
-                                timerExpired = false;
-                                getGameTimer().runOnceAfter(() -> {
-                                    timerExpired = true;
-                                }, Duration.seconds(1));
-                                break;
-                            case "chat":
+                                case "BulletMK1":
+                                    System.out.println("BulletMK1");
+                                    Point2D direction = (Point2D) t.getElementAt(3);
+                                    bullet = spawn(entityType, entityPos);
+                                    bullet.addComponent(new ProjectileComponent(direction, 200));
+                                    break;
+                            }
+                            break;
+                        case "rotate":
+                            break;
+                        case "chat":
+                            msg = t.getElementAt(1).toString();
+                            showMessage((PlayerType) t.getElementAt(2));
+                            break;
+                    }
+                }else {
+                    switch (t.getElementAt(0).toString()) {
+                        case "spawn":
+                            try {
+                                spawnPoint = (Point2D) t.getElementAt(2);
+                                tier = t.getElementAt(1).toString();
                                 sendToAllPlayersOnline(t);
-                                msg = t.getElementAt(1).toString();
-                                showMessage((PlayerType) t.getElementAt(2));
+                            } catch (InterruptedException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            clientsDoneSpawning = false;
+                            timerExpired = false;
+                            getGameTimer().runOnceAfter(() -> {
+                                timerExpired = true;
+                            }, Duration.seconds(1));
+                            break;
+                        case "chat":
+                            sendToAllPlayersOnline(t);
+                            msg = t.getElementAt(1).toString();
+                            showMessage((PlayerType) t.getElementAt(2));
 
-                        }
-                    }
-
-                }
-            }
-
-            if (gameSpace != null && gameSpace.queryp(new ActualField("gold"), new ActualField(gold)) == null) {
-                response = gameSpace.queryp(new ActualField("gold"), new FormalField(Integer.class));
-                if (response != null){
-                    int tempGold = (int) response[1];
-                    if (tempGold != geti("gold")){
-                        set("gold", tempGold);
-                        System.out.println("Gold: " + gold);
-                    }
-                    if (geti("gold") <= 0){
-                        gameOver();
                     }
                 }
             }
+        }
 
-
-            if (draggedEntity != null && isDragging) {
-                // overwrote draggedEntity's position
-                //draggedEntity.getComponent(PosistionComponent.class).setPosistion(getInput().getMousePositionWorld());
-                draggedEntity.setPosition(getInput().getMouseXWorld()- draggedEntity.getWidth() / 2, getInput().getMouseYWorld() - draggedEntity.getHeight() / 2);
-
+        if (gameSpace != null && gameSpace.queryp(new ActualField("gold"), new ActualField(gold)) == null) {
+            response = gameSpace.queryp(new ActualField("gold"), new FormalField(Integer.class));
+            if (response != null){
+                int tempGold = (int) response[1];
+                if (tempGold != geti("gold")){
+                    set("gold", tempGold);
+                    System.out.println("Gold: " + gold);
+                }
+                if (geti("gold") <= 0){
+                    gameOver();
+                }
             }
+        }
 
 
-            if (playerID == PlayerType.PLAYER1) {
-                getGameWorld().getEntitiesByType(EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(this::updateSpecificTurretTarget);
-            }
+        if (draggedEntity != null && isDragging) {
+            // overwrote draggedEntity's position
+            //draggedEntity.getComponent(PosistionComponent.class).setPosistion(getInput().getMousePositionWorld());
+            draggedEntity.setPosition(getInput().getMouseXWorld()- draggedEntity.getWidth() / 2, getInput().getMouseYWorld() - draggedEntity.getHeight() / 2);
+
+        }
+
+
+//            if (playerID == PlayerType.PLAYER1) {
+//                getGameWorld().getEntitiesByType(EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(this::updateSpecificTurretTarget);
+//            }
+        getGameWorld().getEntitiesByType(EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(this::updateSpecificTurretTarget);
 
         } catch (InterruptedException e) {
             getGameController().gotoGameMenu();
@@ -750,7 +752,9 @@ public class App extends GameApplication {
 
         }
 
-        turret.getComponent(ShootingComponent.class).updateTarget(closestEnemy[0]);
+        if (playerID == PlayerType.PLAYER1) {
+            turret.getComponent(ShootingComponent.class).updateTarget(closestEnemy[0]);
+        }
     }
 
     private static void gameOver() throws InterruptedException {
