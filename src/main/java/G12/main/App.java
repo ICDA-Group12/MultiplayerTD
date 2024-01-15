@@ -540,18 +540,18 @@ public class App extends GameApplication {
                     }
                 }
 
-                Object[] lives = gameSpace.queryp(new ActualField("lives"), new FormalField(Integer.class));
-                if (lives != null) {
-                    int tempLives = (int) lives[1];
-                    set("lives", tempLives);
-                    if (tempLives <= 0) {
-                        System.out.println("Game Over");
-                        gameOver();
 
-                    }
+            }
+            Object[] lives = gameSpace.queryp(new ActualField("lives"), new FormalField(Integer.class));
+            if (lives != null) {
+                int tempLives = (int) lives[1];
+                set("lives", tempLives);
+                if (tempLives <= 0 && playerID == PlayerType.PLAYER1) {
+                    System.out.println("Game Over");
+                    gameOver();
+
                 }
             }
-
             if (gameSpace != null) {
                 //System.out.println("Received from other player");
                 response = gameSpace.getp(new ActualField(playerID),  new FormalField(Tuple.class));
