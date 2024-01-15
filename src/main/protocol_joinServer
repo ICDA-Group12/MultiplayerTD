@@ -1,0 +1,56 @@
+
+
+
+client.("newplayer", PlayerType.PLAYER1) -> server.("newplayer", PlayerType.PLAYER1);
+if (gameFull()) @server then
+    server.("newplayer", "no space", "answer") -> client.("newplayer", String, "answer")
+else
+    while notLoopedThroughAllPlayerIDs() @server do {
+        if (PLayerID.isAvailable()) @server then
+            server.("newplayer", playerID.toString(), "answer") -> client.("newplayer", String, "answer")
+            PlayerID.setAvailable(false)
+            while notSentAllEntities() @server do {
+                    server.(PlayerID, Tuple) -> client.(PlayerID, Tuple)
+            }
+            break;
+    }
+
+
+Client:
+    // Projection of interaction step 1
+    gameSpace.put("newPlayer", PlayerType.PLAYER1)
+    // Projection of step 2
+    getResponse = gameSpace.get("newPlayer", String, "answer")
+
+
+Server:
+    // Projection of interaction step 1
+    gameSpace.get("newPlayer", playerID);
+
+    // Projection of internal computation step 2
+    if (gameIsFull()) then
+        // Projection of interaction step 3
+        gameSpace.put("newPlayer", "no space", )
+    else
+        // Projection of internal computation step 4
+        while notLoopedThroughAllPlayerIDs() do {
+
+                // Projection of internal computation step 5
+                if (PlayerID.isAvailable()) then
+
+                    // Projection of interaction step 6
+                    gameSpace.put("newPlayer", PlayerID.toString(), "answer")
+
+                    // Projection of internal computation step 7
+                    PlayerID.setAvailable(false)
+
+                    // Projection of internal computation step 8
+                    while notSentAllEntities() @server do {
+                        // Projection of interaction step 6
+                        gameSpace.put(PlayerID, Tuple)
+                    }
+                    break;
+            }
+
+
+

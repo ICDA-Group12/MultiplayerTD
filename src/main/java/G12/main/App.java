@@ -21,7 +21,6 @@ import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.dsl.components.HealthIntComponent;
 import com.almasb.fxgl.dsl.components.ProjectileComponent;
 import com.almasb.fxgl.entity.Entity;
-import com.almasb.fxgl.entity.Spawns;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.physics.CollisionHandler;
 import javafx.event.ActionEvent;
@@ -30,6 +29,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
@@ -65,8 +65,12 @@ public class App extends GameApplication {
     public Button plane1_btn;
 
     private static String role;
+    private String msg = "";
     public TextField joincodefield;
     public TextField sessionCode;
+    public ListView<String> chatBox;
+    public TextField chatField;
+    OurController controller;
 
     private int enemisSpawned = 10;
     private double spawnrate = 0.5;
@@ -96,7 +100,7 @@ public class App extends GameApplication {
     @Override
     protected void initSettings(GameSettings settings) {
 
-        settings.setWidth(768);
+        settings.setWidth(1000);
         settings.setHeight(574);
         settings.setTitle("Tower Defense");
         //settings.setVersion("0.1");
@@ -113,6 +117,7 @@ public class App extends GameApplication {
         });
 
     }
+
 
     public static class CustomService extends EngineService {
 
@@ -272,7 +277,7 @@ public class App extends GameApplication {
         if (playerID == PlayerType.PLAYER1) {
             Button startRound = new Button("Start Next Round");
 
-            startRound.setTranslateY(100);
+            startRound.setTranslateY(30);
             startRound.setOnAction(e -> {
                 spawnEnemies(spawnrate, enemisSpawned);
                 enemisSpawned += 5;
@@ -283,20 +288,62 @@ public class App extends GameApplication {
             });
             getGameScene().addUINode(startRound);
         }
+        chatBox = new ListView<>();
+        chatBox.setTranslateX(780);
+        chatBox.setPrefHeight(550);
+        chatBox.setMaxWidth(210);
+        chatBox.setPrefWidth(210);
+
+        chatField = new TextField();
+        chatField.setTranslateX(780);
+        chatField.setTranslateY(550);
+        chatField.setPrefWidth(210);
+        chatField.setMaxWidth(210);
+        chatField.setPromptText("Type here");
+
+
+        chatField.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                if (!chatField.getText().isEmpty()) {
+
+                    if (playerID == PlayerType.PLAYER1) {
+                        msg = chatField.getText();
+                        showMessage(playerID);
+                        try {
+                            sendToAllPlayersOnline(new Tuple("chat", msg, playerID));
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }else {
+                        try {
+                            gameSpace.put(PlayerType.PLAYER1, new Tuple("chat", chatField.getText(), playerID));
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        });
 
         Button quitGame = new Button("Quit Game");
         quitGame.setOnAction(e -> {
             try {
                 gameOver();
             } catch (InterruptedException ex) {
-                System.out.println("Not connected to gamespace");
                 getGameController().gotoGameMenu();
             }
         });
         Text goldAmount = addVarText("gold", 500, 20);
         Text livesAmount = addVarText("lives", 450, 20);
-        getGameScene().addUINodes(quitGame);
+        getGameScene().addUINodes(quitGame, chatBox, chatField);
 
+    }
+
+    private void showMessage(PlayerType player) {
+        chatBox.getItems().add(player + ": " + msg);
+        chatBox.scrollTo(chatBox.getItems().size()-1);
+        chatField.clear();
+        chatField.setPromptText("Type here");
     }
 
     @Override
@@ -554,21 +601,33 @@ public class App extends GameApplication {
                                 break;
                             case "rotate":
                                 break;
+                            case "chat":
+                                msg = t.getElementAt(1).toString();
+                                showMessage((PlayerType) t.getElementAt(2));
+                                break;
                         }
                     }else {
+                        switch (t.getElementAt(0).toString()) {
+                            case "spawn":
+                                try {
+                                    spawnPoint = (Point2D) t.getElementAt(2);
+                                    tier = t.getElementAt(1).toString();
+                                    sendToAllPlayersOnline(t);
+                                } catch (InterruptedException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                                clientsDoneSpawning = false;
+                                timerExpired = false;
+                                getGameTimer().runOnceAfter(() -> {
+                                    timerExpired = true;
+                                }, Duration.seconds(1));
+                                break;
+                            case "chat":
+                                sendToAllPlayersOnline(t);
+                                msg = t.getElementAt(1).toString();
+                                showMessage((PlayerType) t.getElementAt(2));
 
-                        try {
-                            spawnPoint = (Point2D) t.getElementAt(2);
-                            tier = t.getElementAt(1).toString();
-                            sendToAllPlayersOnline(t);
-                        } catch (InterruptedException ex) {
-                            throw new RuntimeException(ex);
                         }
-                        clientsDoneSpawning = false;
-                        timerExpired = false;
-                        getGameTimer().runOnceAfter(() -> {
-                            timerExpired = true;
-                        }, Duration.seconds(1));
                     }
 
                 }
@@ -703,10 +762,12 @@ public class App extends GameApplication {
             }
 
             if (playerID == PlayerType.PLAYER1){
+                repository.remove(spaceName);
                 gameSpace = null;
                 repository.closeGate(uri);
                 repository.shutDown();
                 repository = null;
+
 
             }
 
@@ -736,7 +797,7 @@ public class App extends GameApplication {
             gameSpace = null;
             FXGL.getGameController().startNewGame();
         }
-        joincodefield.setPromptText("Put a code dumbass");
+        joincodefield.setPromptText("Put a code bro");
     }
 
     public void newGameButton(ActionEvent actionEvent) {
@@ -748,15 +809,9 @@ public class App extends GameApplication {
             role = "server";
             FXGL.getGameController().startNewGame();
         }
-        sessionCode.setPromptText("Put a code dumbass");
+        sessionCode.setPromptText("Put a code bro");
     }
 
-    public void pickUpTurretMK2(MouseDragEvent mouseDragEvent) {
-    }
 
-    public void image_clicked(MouseEvent mouseEvent) {
-    }
 
-    public void pickUpPlane(MouseDragEvent mouseDragEvent) {
-    }
 }

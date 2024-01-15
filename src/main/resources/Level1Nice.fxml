@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<HBox prefHeight="576.0" prefWidth="768.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="G12.main.App">
+<HBox prefHeight="576.0" prefWidth="896.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="G12.main.App">
    <children>
       <GridPane prefWidth="704.0">
         <columnConstraints>
@@ -595,7 +595,7 @@
          <children>
             <Button fx:id="mk1_btn" mnemonicParsing="false" prefHeight="49.0" prefWidth="64.0" style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: transparent;" text="Button">
                <graphic>
-                  <ImageView fitWidth="64.0" onMouseClicked="#image_clicked">
+                  <ImageView fitWidth="64.0">
                      <image>
                         <Image url="@Default_size/towerDefense_tile292.png" />
                      </image>
@@ -610,7 +610,7 @@
                   <Font size="1.0" />
                </font>
                <graphic>
-                  <ImageView fitWidth="64.0" onMouseDragReleased="#pickUpTurretMK2">
+                  <ImageView fitWidth="64.0">
                      <image>
                         <Image url="@Default_size/towerDefense_tile291.png" />
                      </image>
@@ -622,7 +622,7 @@
                   <Font size="1.0" />
                </font>
                <graphic>
-                  <ImageView fitWidth="64.0" onMouseDragReleased="#pickUpPlane">
+                  <ImageView fitWidth="64.0">
                      <image>
                         <Image url="@Default_size/towerDefense_tile270.png" />
                      </image>
@@ -631,5 +631,6 @@
             </Button>
          </children>
       </VBox>
+      <VBox />
    </children>
 </HBox>
