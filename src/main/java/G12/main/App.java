@@ -98,6 +98,8 @@ public class App extends GameApplication {
     private static String errorMsg;
     private static SpaceRepository repository;
     public static Space gameSpace = null;
+
+    private static RemoteSpace lobby = null;
     public static PlayerType playerID = null;
     private static ArrayList<PlayerType> playersInGame;
     public Parent root;
@@ -133,6 +135,13 @@ public class App extends GameApplication {
                     gameSpace.put("leavingGame", playerID);
                 } catch (InterruptedException e) {
                 }
+            }else {
+                try {
+                    lobby.put("remove", spaceName);
+                } catch (InterruptedException e) {
+                    System.exit(0);
+                    return;
+                }
             }
             System.out.println("onExit()");
             System.exit(0);
@@ -162,11 +171,45 @@ public class App extends GameApplication {
 
         
         if(role.equalsIgnoreCase("server")){
-            uri = "tcp://localhost:31415/?keep";
-            gameSpace = new SequentialSpace();
-            repository = new SpaceRepository();
-            repository.add(spaceName, gameSpace);
-            repository.addGate(uri);
+//            uri = "tcp://localhost:31415/?keep";
+//            gameSpace = new SequentialSpace();
+//            repository = new SpaceRepository();
+//            repository.add(spaceName, gameSpace);
+//            repository.addGate(uri);
+
+            // Set the URI of the loby of the chat server
+            String uri = "tcp://127.0.0.1:9001/lobby?keep";
+
+            // Connect to the remote lobby
+            System.out.println("Connecting to lobby " + uri + "...");
+            try {
+                lobby = new RemoteSpace(uri);
+            } catch (IOException e) {
+                return;
+            }
+
+            // Send request to enter chatroom
+            try {
+                lobby.put("enter", spaceName);
+            } catch (InterruptedException e) {
+                return;
+            }
+
+            // Get response with chatroom URI
+            Object[] responseMain = new Object[0];
+            try {
+                responseMain = lobby.get(new ActualField("roomURI"), new ActualField(spaceName), new FormalField(String.class));
+            } catch (InterruptedException e) {
+                return;
+            }
+            String chatroom_uri = (String) responseMain[2];
+            System.out.println("Connecting to chat space " + chatroom_uri);
+            try {
+                gameSpace = new RemoteSpace(chatroom_uri);
+            } catch (IOException e) {
+                return;
+            }
+
             System.out.println("Connected to game space as server");
             try {
                 gameSpace.put("gold", 1000);
@@ -192,7 +235,7 @@ public class App extends GameApplication {
                         }
                     }
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    return;
                 }
             }).start();
 
@@ -407,7 +450,7 @@ public class App extends GameApplication {
                                             gameSpace.put("gold", goldAmount - 100);
                                         }
                                     } catch (InterruptedException ex) {
-                                        throw new RuntimeException(ex);
+                                        getGameController().gotoMainMenu();
                                     }
                                     draggedEntity.removeFromWorld();
 
@@ -516,6 +559,8 @@ public class App extends GameApplication {
                     boolean allPlayersDone = false;
                     // get "done" from all players in playersInGame
                     if(playersInGame.size() == 1){
+                        if (gameSpace.queryp(new ActualField("lock")) == null)
+                            gameSpace.put("lock");
                         clientsDoneSpawning = true;
 //                        clientsDoneSpawningList.remove(0);
                         timerExpired = false;
@@ -804,12 +849,13 @@ public class App extends GameApplication {
             }
 
             if (playerID == PlayerType.PLAYER1){
-                repository.remove(spaceName);
+//                repository.remove(spaceName);
+                lobby.put("remove", spaceName);
                 System.out.println("Closing repository, and remove space: " + spaceName);
                 gameSpace = null;
-                repository.closeGate(uri);
-                repository.shutDown();
-                repository = null;
+//                repository.closeGate(uri);
+//                repository.shutDown();
+//                repository = null;
 
 
             }
@@ -836,7 +882,8 @@ public class App extends GameApplication {
         if (!joinCode.isEmpty()) {
             System.out.println("Joining game..." + joinCode);
             role = "client";
-            uri = "tcp://localhost:31415/" + joinCode + "?keep";
+            spaceName = joinCode;
+            uri = "tcp://127.0.0.1:9001/" + joinCode + "?keep";
             gameSpace = null;
             FXGL.getGameController().startNewGame();
         }
