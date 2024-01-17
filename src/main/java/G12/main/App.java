@@ -41,6 +41,7 @@ import org.jspace.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -76,14 +77,18 @@ public class App extends GameApplication {
     private double spawnrate = 0.5;
 
     private boolean timerExpired = false;
+    private List<Boolean> timerExpiredList = new ArrayList<>();
     private boolean canSpawnNewTower = true;
     private boolean clientsDoneSpawning = true;
+    private List<Boolean> clientsDoneSpawningList = new ArrayList<>();
     private boolean isDragging = false;
     private Entity draggedEntity = null;
     private Entity nextEntity = null;
 
     private String tier = "";
+    private List<String> tiers = new ArrayList<>();
     private Point2D spawnPoint = null;
+    private List<Point2D> spawnPoints = new ArrayList<>();
     private Entity bullet = null;
 
 
@@ -169,7 +174,7 @@ public class App extends GameApplication {
                 playersInGame = new ArrayList<>();
                 playerID = PlayerType.PLAYER1;
                 playersInGame.add(playerID);
-                gameSpace.put("players", playersInGame);
+                gameSpace.put("lock");
                 
             } catch (InterruptedException e) {
                 errorMsg = "Could not connect to game space";
@@ -213,7 +218,7 @@ public class App extends GameApplication {
             } catch (InterruptedException e) {
                 errorMsg = "Could not connect to game space";
                 System.out.println(errorMsg);
-                getGameController().gotoMainMenu();
+                return;
             }
             System.out.println(getResponse[1].toString());
             switch (getResponse[1].toString()) {
@@ -358,7 +363,7 @@ public class App extends GameApplication {
 //                System.out.println(e.getTarget());
                 Object[] gold;
                 int goldAmount;
-
+                System.out.println("Mouse pressed" + clientsDoneSpawning);
                 if (!isDragging && clientsDoneSpawning) {
                     if (e.getTarget().getClass() == Button.class) {
                         Button btn = (Button) e.getTarget();
@@ -375,6 +380,7 @@ public class App extends GameApplication {
                             draggedEntity = spawn("TurretMK2", FXGL.getInput().getMousePositionWorld());
                             isDragging = true;
                         }
+                        tiers.add(tier);
                     }
                 }else {
                     double x = e.getX();
@@ -405,26 +411,36 @@ public class App extends GameApplication {
                                     }
                                     draggedEntity.removeFromWorld();
 
-                                    if (playerID == PlayerType.PLAYER1){
-                                        try {
-                                            spawnPoint = draggedEntity.getCenter();
-                                            sendToAllPlayersOnline(new Tuple("spawn",tier, draggedEntity.getCenter()));
-                                        } catch (InterruptedException ex) {
-                                            throw new RuntimeException(ex);
-                                        }
-                                        clientsDoneSpawning = false;
-                                        timerExpired = false;
-                                        getGameTimer().runOnceAfter(() -> {
-                                            timerExpired = true;
-                                        }, Duration.seconds(1));
+                                    try {
+                                        if (playerID == PlayerType.PLAYER1 && gameSpace.getp(new ActualField("lock")) != null) {
+                                            try {
+                                                spawnPoint = draggedEntity.getCenter();
+    //                                            spawnPoints.add(draggedEntity.getCenter());
+                                                sendToAllPlayersOnline(new Tuple("spawn",tier, draggedEntity.getCenter()));
+                                            } catch (InterruptedException ex) {
+                                                throw new RuntimeException(ex);
+                                            }
+                                            clientsDoneSpawning = false;
+    //                                        clientsDoneSpawningList.add(false);
+                                            timerExpired = false;
+    //                                        timerExpiredList.add(false);
+                                            int size = timerExpiredList.size();
+                                            getGameTimer().runOnceAfter(() -> {
+                                                timerExpired = true;
+    //                                            if (!timerExpiredList.isEmpty() && timerExpiredList.size() == size)
+    //                                                timerExpiredList.set(0, true);
+                                            }, Duration.seconds(1));
 
-                                    }else {
-                                        try {
-                                            gameSpace.put(PlayerType.PLAYER1, new Tuple("spawn",tier, draggedEntity.getCenter()));
-                                            canSpawnNewTower = false;
-                                        } catch (InterruptedException ex) {
-                                            throw new RuntimeException(ex);
+                                        }else {
+                                            try {
+                                                gameSpace.put(PlayerType.PLAYER1, new Tuple("spawn",tier, draggedEntity.getCenter()));
+                                                canSpawnNewTower = false;
+                                            } catch (InterruptedException ex) {
+                                                throw new RuntimeException(ex);
+                                            }
                                         }
+                                    } catch (InterruptedException ex) {
+                                        return;
                                     }
                                     isDragging = false;
                                 }else {
@@ -433,10 +449,8 @@ public class App extends GameApplication {
                                     break;
                                 }
                             }
-
                         }
                     }
-
                 }
             }
 
@@ -503,9 +517,14 @@ public class App extends GameApplication {
                     // get "done" from all players in playersInGame
                     if(playersInGame.size() == 1){
                         clientsDoneSpawning = true;
+//                        clientsDoneSpawningList.remove(0);
                         timerExpired = false;
+//                        timerExpiredList.remove(0);
                         System.out.println("gg");
                         spawn(tier, spawnPoint);
+//                        spawn(tiers.get(0), spawnPoints.get(0));
+//                        tiers.remove(0);
+//                        spawnPoints.remove(0);
                     } else {
                         allPlayersDone = true;
                         for (PlayerType player : playersInGame) {
@@ -515,6 +534,7 @@ public class App extends GameApplication {
                                     System.out.println("Player " + player + " did not respond");
                                     playersInGame.remove(player);
                                     clientsDoneSpawning = false;
+//                                    clientsDoneSpawningList.remove(0);
                                     allPlayersDone = false;
                                     break;
                                 }else if (response == null){
@@ -534,9 +554,17 @@ public class App extends GameApplication {
                                 gameSpace.get(new ActualField("Done"), new ActualField(player));
                             }
                         }
+                        if (gameSpace.queryp(new ActualField("lock")) == null)
+                            gameSpace.put("lock");
+
                         clientsDoneSpawning = true;
+//                        clientsDoneSpawningList.remove(0);
                         timerExpired = false;
+//                        timerExpiredList.remove(0);
                         spawn(tier, spawnPoint);
+//                        spawn(tiers.get(0), spawnPoints.get(0));
+//                        tiers.remove(0);
+//                        spawnPoints.remove(0);
                     }
                 }
 
@@ -576,6 +604,7 @@ public class App extends GameApplication {
 //                                    }else {
 //                                        spawn("TurretMK1", entityPos);
 //                                    }
+                                    //gameSpace.get(new ActualField("bozo"));
                                     spawn("TurretMK1static", entityPos);
                                     System.out.println("repsoning");
                                     gameSpace.put("Done", playerID);
@@ -611,18 +640,28 @@ public class App extends GameApplication {
                 }else {
                     switch (t.getElementAt(0).toString()) {
                         case "spawn":
-                            try {
-                                spawnPoint = (Point2D) t.getElementAt(2);
-                                tier = t.getElementAt(1).toString();
-                                sendToAllPlayersOnline(t);
-                            } catch (InterruptedException ex) {
-                                throw new RuntimeException(ex);
+
+                            if (gameSpace.getp(new ActualField("lock")) != null) {
+                                try {
+                                    spawnPoint = (Point2D) t.getElementAt(2);
+    //                                spawnPoints.add(spawnPoint);
+                                    tier = t.getElementAt(1).toString();
+    //                                tiers.add(tier);
+                                    sendToAllPlayersOnline(t);
+                                } catch (InterruptedException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                                clientsDoneSpawning = false;
+//                            clientsDoneSpawningList.add(false);
+                                timerExpired = false;
+//                            timerExpiredList.add(false);
+//                            int size = timerExpiredList.size();
+                                getGameTimer().runOnceAfter(() -> {
+                                    timerExpired = true;
+    //                                if (!timerExpiredList.isEmpty() && timerExpiredList.size() == size)
+    //                                    timerExpiredList.set(0, true);
+                                }, Duration.seconds(1));
                             }
-                            clientsDoneSpawning = false;
-                            timerExpired = false;
-                            getGameTimer().runOnceAfter(() -> {
-                                timerExpired = true;
-                            }, Duration.seconds(1));
                             break;
                         case "chat":
                             sendToAllPlayersOnline(t);
