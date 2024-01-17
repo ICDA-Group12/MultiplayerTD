@@ -23,6 +23,7 @@ import com.almasb.fxgl.dsl.components.ProjectileComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.physics.CollisionHandler;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
@@ -130,12 +131,13 @@ public class App extends GameApplication {
 
         @Override
         public void onExit() {
+            System.out.println("playerID: " + playerID + " leaving game" );
             if (playerID != PlayerType.PLAYER1 && playerID != null) {
                 try {
                     gameSpace.put("leavingGame", playerID);
                 } catch (InterruptedException e) {
                 }
-            }else {
+            }else if (playerID == PlayerType.PLAYER1 && lobby != null){
                 try {
                     lobby.put("remove", spaceName);
                 } catch (InterruptedException e) {
@@ -235,7 +237,7 @@ public class App extends GameApplication {
                         }
                     }
                 } catch (InterruptedException e) {
-                    return;
+                    Thread.currentThread().interrupt();
                 }
             }).start();
 
@@ -247,6 +249,8 @@ public class App extends GameApplication {
             } catch (IOException e) {
                 errorMsg = "Could not connect to repository";
                 System.out.println(errorMsg);
+                Platform.runLater(() -> getGameController().gotoMainMenu());
+                playerID = null;
                 return;
             }
 
@@ -261,6 +265,8 @@ public class App extends GameApplication {
             } catch (InterruptedException e) {
                 errorMsg = "Could not connect to game space";
                 System.out.println(errorMsg);
+                Platform.runLater(() -> getGameController().gotoMainMenu());
+                playerID = null;
                 return;
             }
             System.out.println(getResponse[1].toString());
@@ -281,6 +287,7 @@ public class App extends GameApplication {
                     errorMsg = "No available player";
                     return;
             }
+            canSpawnNewTower = true;
 
         }
 
@@ -402,11 +409,12 @@ public class App extends GameApplication {
         Input input = FXGL.getInput();
 
         input.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            System.out.println("Mouse pressed from client");
             if (e.getButton() == MouseButton.PRIMARY && canSpawnNewTower) {
 //                System.out.println(e.getTarget());
                 Object[] gold;
                 int goldAmount;
-                System.out.println("Mouse pressed" + clientsDoneSpawning);
+                System.out.println("Mouse pressed: " + clientsDoneSpawning);
                 if (!isDragging && clientsDoneSpawning) {
                     if (e.getTarget().getClass() == Button.class) {
                         Button btn = (Button) e.getTarget();
@@ -506,7 +514,6 @@ public class App extends GameApplication {
     @Override
     protected void onUpdate(double tpf) {
         Object [] response = null;
-
         if (playerID == null || gameSpace == null){
             try {
                 gameOver();
@@ -516,7 +523,8 @@ public class App extends GameApplication {
             }
             return;
         }
-            //System.out.println("Player 1");
+
+        //System.out.println("Player 1");
         try {
             if (playerID == PlayerType.PLAYER1) {
                 response = gameSpace.getp(new ActualField("newPlayer"), new ActualField(playerID));
@@ -632,118 +640,122 @@ public class App extends GameApplication {
                     Tuple t = (Tuple) response[1];
 
 
-                if (playerID != PlayerType.PLAYER1) {
-                    switch (t.getElementAt(0).toString()){
-                        case "spawn":
-                            String entityType = t.getElementAt(1).toString();
-                            Point2D entityPos = (Point2D) t.getElementAt(2);
+                    if (playerID != PlayerType.PLAYER1) {
+                        switch (t.getElementAt(0).toString()){
+                            case "spawn":
+                                String entityType = t.getElementAt(1).toString();
+                                Point2D entityPos = (Point2D) t.getElementAt(2);
 
-                            switch (entityType) {
-                                case "EnemyMK1":
-                                    spawn(entityType, entityPos.getX(), entityPos.getY());
-                                    break;
+                                switch (entityType) {
+                                    case "EnemyMK1":
+                                        spawn(entityType, entityPos.getX(), entityPos.getY());
+                                        break;
 
-                                case "TurretMK1static":
-//                                    if (playerID == PlayerType.PLAYER1){
-//                                        spawn("TurretMK1static", entityPos);
-//                                    }else {
-//                                        spawn("TurretMK1", entityPos);
-//                                    }
-                                    //gameSpace.get(new ActualField("bozo"));
-                                    spawn("TurretMK1static", entityPos);
-                                    System.out.println("repsoning");
-                                    gameSpace.put("Done", playerID);
-                                    canSpawnNewTower = true;
-                                    break;
+                                    case "TurretMK1static":
+    //                                    if (playerID == PlayerType.PLAYER1){
+    //                                        spawn("TurretMK1static", entityPos);
+    //                                    }else {
+    //                                        spawn("TurretMK1", entityPos);
+    //                                    }
+                                        //gameSpace.get(new ActualField("bozo"));
+                                        spawn("TurretMK1static", entityPos);
+                                        System.out.println("repsoning");
+                                        gameSpace.put("Done", playerID);
+                                        canSpawnNewTower = true;
+                                        break;
 
-                                case "TurretMK2static":
-//                                    if (playerID == PlayerType.PLAYER1){
-//                                        spawn("TurretMK2static", entityPos);
-//                                    }else {
-//                                        spawn("TurretMK2", entityPos);
-//                                    }
-                                    spawn("TurretMK2static", entityPos);
-                                    gameSpace.put("Done", playerID);
-                                    canSpawnNewTower = true;
-                                    break;
+                                    case "TurretMK2static":
+    //                                    if (playerID == PlayerType.PLAYER1){
+    //                                        spawn("TurretMK2static", entityPos);
+    //                                    }else {
+    //                                        spawn("TurretMK2", entityPos);
+    //                                    }
+                                        spawn("TurretMK2static", entityPos);
+                                        gameSpace.put("Done", playerID);
+                                        canSpawnNewTower = true;
+                                        break;
 
-                                case "BulletMK1":
-                                    System.out.println("BulletMK1");
-                                    Point2D direction = (Point2D) t.getElementAt(3);
-                                    bullet = spawn(entityType, entityPos);
-                                    bullet.addComponent(new ProjectileComponent(direction, 200));
-                                    break;
-                            }
-                            break;
-                        case "rotate":
-                            break;
-                        case "chat":
-                            msg = t.getElementAt(1).toString();
-                            showMessage((PlayerType) t.getElementAt(2));
-                            break;
-                    }
-                }else {
-                    switch (t.getElementAt(0).toString()) {
-                        case "spawn":
-
-                            if (gameSpace.getp(new ActualField("lock")) != null) {
-                                try {
-                                    spawnPoint = (Point2D) t.getElementAt(2);
-    //                                spawnPoints.add(spawnPoint);
-                                    tier = t.getElementAt(1).toString();
-    //                                tiers.add(tier);
-                                    sendToAllPlayersOnline(t);
-                                } catch (InterruptedException ex) {
-                                    throw new RuntimeException(ex);
+                                    case "BulletMK1":
+                                        System.out.println("BulletMK1");
+                                        Point2D direction = (Point2D) t.getElementAt(3);
+                                        bullet = spawn(entityType, entityPos);
+                                        bullet.addComponent(new ProjectileComponent(direction, 200));
+                                        break;
                                 }
-                                clientsDoneSpawning = false;
-//                            clientsDoneSpawningList.add(false);
-                                timerExpired = false;
-//                            timerExpiredList.add(false);
-//                            int size = timerExpiredList.size();
-                                getGameTimer().runOnceAfter(() -> {
-                                    timerExpired = true;
-    //                                if (!timerExpiredList.isEmpty() && timerExpiredList.size() == size)
-    //                                    timerExpiredList.set(0, true);
-                                }, Duration.seconds(1));
-                            }
-                            break;
-                        case "chat":
-                            sendToAllPlayersOnline(t);
-                            msg = t.getElementAt(1).toString();
-                            showMessage((PlayerType) t.getElementAt(2));
+                                break;
+                            case "rotate":
+                                break;
+                            case "chat":
+                                msg = t.getElementAt(1).toString();
+                                showMessage((PlayerType) t.getElementAt(2));
+                                break;
+                            case "gameOver":
+                                System.out.println("Game Over");
+                                gameOver();
+                                break;
+                        }
+                    }else {
+                        switch (t.getElementAt(0).toString()) {
+                            case "spawn":
 
+                                if (gameSpace.getp(new ActualField("lock")) != null) {
+                                    try {
+                                        spawnPoint = (Point2D) t.getElementAt(2);
+        //                                spawnPoints.add(spawnPoint);
+                                        tier = t.getElementAt(1).toString();
+        //                                tiers.add(tier);
+                                        sendToAllPlayersOnline(t);
+                                    } catch (InterruptedException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                    clientsDoneSpawning = false;
+    //                            clientsDoneSpawningList.add(false);
+                                    timerExpired = false;
+    //                            timerExpiredList.add(false);
+    //                            int size = timerExpiredList.size();
+                                    getGameTimer().runOnceAfter(() -> {
+                                        timerExpired = true;
+        //                                if (!timerExpiredList.isEmpty() && timerExpiredList.size() == size)
+        //                                    timerExpiredList.set(0, true);
+                                    }, Duration.seconds(1));
+                                }
+                                break;
+                            case "chat":
+                                sendToAllPlayersOnline(t);
+                                msg = t.getElementAt(1).toString();
+                                showMessage((PlayerType) t.getElementAt(2));
+
+                        }
                     }
                 }
             }
-        }
 
-        if (gameSpace != null && gameSpace.queryp(new ActualField("gold"), new ActualField(gold)) == null) {
-            response = gameSpace.queryp(new ActualField("gold"), new FormalField(Integer.class));
-            if (response != null){
-                int tempGold = (int) response[1];
-                if (tempGold != geti("gold")){
-                    set("gold", tempGold);
-                }
-                if (geti("gold") <= 0){
-                    //gameOver();
+            if (gameSpace != null && gameSpace.queryp(new ActualField("gold"), new ActualField(gold)) == null) {
+                response = gameSpace.queryp(new ActualField("gold"), new FormalField(Integer.class));
+                if (response != null){
+                    int tempGold = (int) response[1];
+                    if (tempGold != geti("gold")){
+                        set("gold", tempGold);
+                    }
+                    if (geti("gold") <= 0){
+                        //gameOver();
+                    }
                 }
             }
-        }
 
 
-        if (draggedEntity != null && isDragging) {
-            // overwrote draggedEntity's position
-            //draggedEntity.getComponent(PosistionComponent.class).setPosistion(getInput().getMousePositionWorld());
-            draggedEntity.setPosition(getInput().getMouseXWorld()- draggedEntity.getWidth() / 2, getInput().getMouseYWorld() - draggedEntity.getHeight() / 2);
+            if (draggedEntity != null && isDragging) {
+                // overwrote draggedEntity's position
+                //draggedEntity.getComponent(PosistionComponent.class).setPosistion(getInput().getMousePositionWorld());
+                draggedEntity.setPosition(getInput().getMouseXWorld()- draggedEntity.getWidth() / 2, getInput().getMouseYWorld() - draggedEntity.getHeight() / 2);
 
-        }
+            }
 
 
-//            if (playerID == PlayerType.PLAYER1) {
-//                getGameWorld().getEntitiesByType(EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(this::updateSpecificTurretTarget);
-//            }
-        getGameWorld().getEntitiesByType(EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(this::updateSpecificTurretTarget);
+    //            if (playerID == PlayerType.PLAYER1) {
+    //                getGameWorld().getEntitiesByType(EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(this::updateSpecificTurretTarget);
+    //            }
+            getGameWorld().getEntitiesByType(EntityType.TURRETMK1, EntityType.TURRETMK2).forEach(this::updateSpecificTurretTarget);
 
         } catch (InterruptedException e) {
             getGameController().gotoMainMenu();
@@ -850,6 +862,7 @@ public class App extends GameApplication {
 
             if (playerID == PlayerType.PLAYER1){
 //                repository.remove(spaceName);
+                sendToAllPlayersOnline(new Tuple("gameOver"));
                 lobby.put("remove", spaceName);
                 System.out.println("Closing repository, and remove space: " + spaceName);
                 gameSpace = null;
@@ -885,7 +898,7 @@ public class App extends GameApplication {
             spaceName = joinCode;
             uri = "tcp://127.0.0.1:9001/" + joinCode + "?keep";
             gameSpace = null;
-            FXGL.getGameController().startNewGame();
+            getGameController().startNewGame();
         }
         joincodefield.setPromptText("Put a code bro");
     }
@@ -897,7 +910,7 @@ public class App extends GameApplication {
             System.out.println(createCode);
             System.out.println("Starting new game...");
             role = "server";
-            FXGL.getGameController().startNewGame();
+            getGameController().startNewGame();
         }
         sessionCode.setPromptText("Put a code bro");
     }

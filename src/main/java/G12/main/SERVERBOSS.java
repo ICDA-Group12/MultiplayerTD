@@ -28,14 +28,12 @@ public class SERVERBOSS {
                 Object[] request;
                 try {
                     request = lobby.get(new ActualField("remove"), new FormalField(String.class));
-                    if (rooms.queryp(new ActualField(request[1])) != null) {
-                        System.out.println("Removing room " + request[1] + "...");
-                        rooms.get(new ActualField(request[1]));
-                        repository.remove(request[1].toString());
-                    }
+                    System.out.println("Removing room " + request[1] + "...");
+                    rooms.get(new ActualField(request[1]));
+                    repository.remove(request[1].toString());
 
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+
                 }
             }).start();
             // Keep serving requests to enter chatrooms
@@ -46,30 +44,42 @@ public class SERVERBOSS {
 
                 while (true) {
                     // Read request
-                    Object[] request = lobby.get(new ActualField("enter"), new FormalField(String.class));
+                    Object[] request = lobby.get(new FormalField(String.class), new FormalField(String.class));
                     String roomID = (String) request[1];
-                    System.out.println("requesting to enter " + roomID + "...");
+                    switch ((String) request[0]) {
+                        case "remove":
+                            System.out.println("Removing room " + roomID + "...");
+                            rooms.get(new ActualField(roomID));
+                            repository.remove(roomID);
+                            break;
+                        case "enter":
+                            System.out.println("requesting to enter " + roomID + "...");
 
-                    // If room exists just prepare the response with the corresponding URI
-                    Object[] the_room = rooms.queryp(new ActualField(roomID));
-                    if (the_room != null) {
-                        roomURI = "tcp://127.0.0.1:9001/" + the_room[0] + "?keep";
+                            // If room exists just prepare the response with the corresponding URI
+                            Object[] the_room = rooms.queryp(new ActualField(roomID));
+                            if (the_room != null) {
+                                roomURI = "tcp://127.0.0.1:9001/" + the_room[0] + "?keep";
+                            }
+                            // If the room does not exist, create the room and launch a room handler
+                            else {
+                                System.out.println("Creating room " + roomID);
+                                roomURI = "tcp://127.0.0.1:9001/" + roomID + "?keep";
+                                System.out.println("Setting up chat space " + roomURI + "...");
+                                Space chat = new SequentialSpace();
+
+                                // Add the space to the repository
+                                repository.add(roomID, chat);
+                                rooms.put(roomID);
+                            }
+
+                            // Sending response back to the chat client
+                            System.out.println("Telling to go for room " + roomID + " at " + roomURI + "...");
+                            lobby.put("roomURI", roomID, roomURI);
+                            break;
+                        default:
+                            break;
                     }
-                    // If the room does not exist, create the room and launch a room handler
-                    else {
-                        System.out.println("Creating room " + roomID);
-                        roomURI = "tcp://127.0.0.1:9001/" + roomID + "?keep";
-                        System.out.println("Setting up chat space " + roomURI + "...");
-                        Space chat = new SequentialSpace();
 
-                        // Add the space to the repository
-                        repository.add(roomID, chat);
-                        rooms.put(roomID);
-                    }
-
-                    // Sending response back to the chat client
-                    System.out.println("Telling to go for room " + roomID + " at " + roomURI + "...");
-                    lobby.put("roomURI", roomID, roomURI);
                 }
 
 
