@@ -204,7 +204,13 @@ public class App extends GameApplication {
             } catch (InterruptedException e) {
                 return;
             }
+
             String chatroom_uri = (String) responseMain[2];
+            if (chatroom_uri.equals("inUse")) {
+                errorMsg = "Chatroom name already in use";
+                System.out.println(errorMsg);
+                return;
+            }
             System.out.println("Connecting to chat space " + chatroom_uri);
             try {
                 gameSpace = new RemoteSpace(chatroom_uri);

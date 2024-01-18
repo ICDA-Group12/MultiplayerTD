@@ -24,18 +24,6 @@ public class SERVERBOSS {
 
             // This space room identifiers to port numbers
             SequentialSpace rooms = new SequentialSpace();
-            new Thread(()->{
-                Object[] request;
-                try {
-                    request = lobby.get(new ActualField("remove"), new FormalField(String.class));
-                    System.out.println("Removing room " + request[1] + "...");
-                    rooms.get(new ActualField(request[1]));
-                    repository.remove(request[1].toString());
-
-                } catch (InterruptedException e) {
-
-                }
-            }).start();
             // Keep serving requests to enter chatrooms
             while (true) {
 
@@ -58,7 +46,7 @@ public class SERVERBOSS {
                             // If room exists just prepare the response with the corresponding URI
                             Object[] the_room = rooms.queryp(new ActualField(roomID));
                             if (the_room != null) {
-                                roomURI = "tcp://127.0.0.1:9001/" + the_room[0] + "?keep";
+                                roomURI = "inUse";
                             }
                             // If the room does not exist, create the room and launch a room handler
                             else {
