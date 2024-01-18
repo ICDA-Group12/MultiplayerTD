@@ -500,6 +500,7 @@ public class App extends GameApplication {
                                         return;
                                     }
                                     isDragging = false;
+                                    break;
                                 }else {
                                     draggedEntity.removeFromWorld();
                                     isDragging = false;
@@ -508,6 +509,8 @@ public class App extends GameApplication {
                             }
                         }
                     }
+                    draggedEntity.removeFromWorld();
+                    isDragging = false;
                 }
             }
 
