@@ -68,6 +68,7 @@ public class App extends GameApplication {
 
     private static String role;
     private String msg = "";
+    private String ip = "127.0.0.1:9001";
     public TextField joincodefield;
     public TextField sessionCode;
     public ListView<String> chatBox;
@@ -97,7 +98,6 @@ public class App extends GameApplication {
     private static String uri;
     private static String spaceName;
     private static String errorMsg;
-    private static SpaceRepository repository;
     public static Space gameSpace = null;
 
     private static RemoteSpace lobby = null;
@@ -170,7 +170,29 @@ public class App extends GameApplication {
     // Resource path
     @Override
     protected void initGame() {
+        msg = "";
+        // set all variables to default
+        playerID = null;
+        playersInGame = null;
+        gameSpace = null;
+        enemisSpawned = 10;
+        spawnrate = 0.5;
 
+        timerExpired = false;
+        canSpawnNewTower = true;
+        clientsDoneSpawning = true;
+        isDragging = false;
+        draggedEntity = null;
+        nextEntity = null;
+
+        tier = "";
+        spawnPoint = null;
+        bullet = null;
+
+
+        // pSpaces
+        uri = null;
+        errorMsg = null;
         
         if(role.equalsIgnoreCase("server")){
 //            uri = "tcp://localhost:31415/?keep";
@@ -180,7 +202,8 @@ public class App extends GameApplication {
 //            repository.addGate(uri);
 
             // Set the URI of the loby of the chat server
-            String uri = "tcp://127.0.0.1:9001/lobby?keep";
+
+            String uri = "tcp://" + ip + "/lobby?keep";
 
             // Connect to the remote lobby
             System.out.println("Connecting to lobby " + uri + "...");
@@ -249,6 +272,7 @@ public class App extends GameApplication {
 
 
         } else {
+            uri = "tcp://"  +ip + "/" + spaceName + "?keep";
             System.out.println("Connecting to server..." + uri);
             try {
                 gameSpace = new RemoteSpace(uri);
@@ -905,7 +929,6 @@ public class App extends GameApplication {
             System.out.println("Joining game..." + joinCode);
             role = "client";
             spaceName = joinCode;
-            uri = "tcp://127.0.0.1:9001/" + joinCode + "?keep";
             gameSpace = null;
             getGameController().startNewGame();
         }

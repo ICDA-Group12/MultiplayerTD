@@ -16,10 +16,11 @@ public class SERVERBOSS {
             repository.add("lobby",lobby);
 
             // Set the URI of the chat space
-            String uri = "tcp://127.0.0.1:9001/lobby?keep";
+            String s = "127.0.0.1:9001";
+            String uri = "tcp://" + s + "/lobby?keep";
 
             // Open a gate
-            repository.addGate("tcp://127.0.0.1:9001/?keep");
+            repository.addGate("tcp://" + s + "/?keep");
             System.out.println("Opening repository gate at " + uri + "...");
 
             // This space room identifiers to port numbers
@@ -51,7 +52,7 @@ public class SERVERBOSS {
                             // If the room does not exist, create the room and launch a room handler
                             else {
                                 System.out.println("Creating room " + roomID);
-                                roomURI = "tcp://127.0.0.1:9001/" + roomID + "?keep";
+                                roomURI = "tcp://" + s + "/" + roomID + "?keep";
                                 System.out.println("Setting up chat space " + roomURI + "...");
                                 Space chat = new SequentialSpace();
 
