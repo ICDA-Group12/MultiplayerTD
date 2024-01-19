@@ -16,7 +16,7 @@ public class SERVERBOSS {
             repository.add("lobby",lobby);
 
             // Set the URI of the chat space
-            String s = "127.0.0.1:9001";
+            String s = "10.209.212.69:9001";
             String uri = "tcp://" + s + "/lobby?keep";
 
             // Open a gate

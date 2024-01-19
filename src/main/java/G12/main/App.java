@@ -68,7 +68,7 @@ public class App extends GameApplication {
 
     private static String role;
     private String msg = "";
-    private String ip = "127.0.0.1:9001";
+    private String ip = "10.209.212.69:9001";
     public TextField joincodefield;
     public TextField sessionCode;
     public ListView<String> chatBox;
